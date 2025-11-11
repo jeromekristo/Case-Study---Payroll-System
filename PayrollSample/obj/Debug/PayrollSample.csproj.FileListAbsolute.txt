@@ -1,0 +1,11 @@
+C:\Users\me\Desktop\sampol lang\PayrollSample\bin\Debug\PayrollSample.exe.config
+C:\Users\me\Desktop\sampol lang\PayrollSample\bin\Debug\PayrollSample.exe
+C:\Users\me\Desktop\sampol lang\PayrollSample\bin\Debug\PayrollSample.pdb
+C:\Users\me\Desktop\sampol lang\PayrollSample\obj\Debug\PayrollSample.csproj.AssemblyReference.cache
+C:\Users\me\Desktop\sampol lang\PayrollSample\obj\Debug\PayrollSample.Form1.resources
+C:\Users\me\Desktop\sampol lang\PayrollSample\obj\Debug\PayrollSample.Properties.Resources.resources
+C:\Users\me\Desktop\sampol lang\PayrollSample\obj\Debug\PayrollSample.csproj.GenerateResource.cache
+C:\Users\me\Desktop\sampol lang\PayrollSample\obj\Debug\PayrollSample.csproj.CoreCompileInputs.cache
+C:\Users\me\Desktop\sampol lang\PayrollSample\obj\Debug\PayrollSample.exe
+C:\Users\me\Desktop\sampol lang\PayrollSample\obj\Debug\PayrollSample.pdb
+C:\Users\me\Desktop\sampol lang\PayrollSample\obj\Debug\PayrollSample.RegisterForm.resources
