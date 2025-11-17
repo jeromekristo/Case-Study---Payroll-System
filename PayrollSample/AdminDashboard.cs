@@ -57,6 +57,12 @@ namespace PayrollSample
 
         private void btnLogout_Click(object sender, EventArgs e)
         {
+            var confirmResult = MessageBox.Show("Are you sure you want to log out?", "Confirm Logout", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (confirmResult != DialogResult.Yes)
+            {
+                return;
+            }
+
             // Find and show the login form
             Form1 loginForm = null;
             foreach (Form form in Application.OpenForms)

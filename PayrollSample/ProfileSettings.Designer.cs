@@ -160,7 +160,7 @@ namespace PayrollSample
             this.MinimizeBox = false;
             this.Name = "ProfileSettings";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Profile Settings";
+            this.Text = " ";
             this.groupBoxProfile.ResumeLayout(false);
             this.groupBoxProfile.PerformLayout();
             this.ResumeLayout(false);
