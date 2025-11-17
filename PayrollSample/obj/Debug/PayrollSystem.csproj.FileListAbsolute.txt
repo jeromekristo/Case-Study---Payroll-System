@@ -11,3 +11,4 @@ C:\Users\me\Desktop\sampol lang\PayrollSample\obj\Debug\PayrollSystem.csproj.Cor
 C:\Users\me\Desktop\sampol lang\PayrollSample\obj\Debug\PayrollSample.exe
 C:\Users\me\Desktop\sampol lang\PayrollSample\obj\Debug\PayrollSample.pdb
 C:\Users\me\Desktop\sampol lang\PayrollSample\obj\Debug\PayrollSample.AdminDashboard.resources
+C:\Users\me\Desktop\sampol lang\PayrollSample\obj\Debug\PayrollSample.ProfileSettings.resources

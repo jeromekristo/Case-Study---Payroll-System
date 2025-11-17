@@ -28,8 +28,11 @@ namespace PayrollSample
 
         private void btnProfileSettings_Click(object sender, EventArgs e)
         {
-            // Placeholder - will be implemented later
-            MessageBox.Show("Profile Settings feature coming soon!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            using (var profileForm = new ProfileSettings(username))
+            {
+                profileForm.StartPosition = FormStartPosition.CenterParent;
+                profileForm.ShowDialog(this);
+            }
         }
 
         private void UserDashboard_Load(object sender, EventArgs e)
