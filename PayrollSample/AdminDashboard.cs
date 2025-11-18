@@ -21,8 +21,11 @@ namespace PayrollSample
 
         private void btnManageEmployees_Click(object sender, EventArgs e)
         {
-            // Placeholder - will be implemented later
-            MessageBox.Show("Manage Employee Records feature coming soon!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            using (var manageForm = new ManageEmployeeRecords())
+            {
+                manageForm.StartPosition = FormStartPosition.CenterParent;
+                manageForm.ShowDialog(this);
+            }
         }
 
         private void btnAttendanceManagement_Click(object sender, EventArgs e)
