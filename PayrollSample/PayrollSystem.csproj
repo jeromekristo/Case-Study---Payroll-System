@@ -70,6 +70,18 @@
     <Compile Include="AdminDashboard.Designer.cs">
       <DependentUpon>AdminDashboard.cs</DependentUpon>
     </Compile>
+    <Compile Include="FrmReports.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmReports.Designer.cs">
+      <DependentUpon>FrmReports.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FrmAttendanceManagement.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmAttendanceManagement.Designer.cs">
+      <DependentUpon>FrmAttendanceManagement.cs</DependentUpon>
+    </Compile>
     <Compile Include="ManageEmployeeRecords.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -81,6 +93,18 @@
     </Compile>
     <Compile Include="ProfileSettings.Designer.cs">
       <DependentUpon>ProfileSettings.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FrmPayrollProcessing.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmPayrollProcessing.Designer.cs">
+      <DependentUpon>FrmPayrollProcessing.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FrmPayslip.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmPayslip.Designer.cs">
+      <DependentUpon>FrmPayslip.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -96,11 +120,23 @@
     <EmbeddedResource Include="AdminDashboard.resx">
       <DependentUpon>AdminDashboard.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="FrmReports.resx">
+      <DependentUpon>FrmReports.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FrmAttendanceManagement.resx">
+      <DependentUpon>FrmAttendanceManagement.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="ManageEmployeeRecords.resx">
       <DependentUpon>ManageEmployeeRecords.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ProfileSettings.resx">
       <DependentUpon>ProfileSettings.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FrmPayrollProcessing.resx">
+      <DependentUpon>FrmPayrollProcessing.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FrmPayslip.resx">
+      <DependentUpon>FrmPayslip.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

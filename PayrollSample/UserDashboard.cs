@@ -25,8 +25,17 @@ namespace PayrollSample
 
         private void btnViewPayslip_Click(object sender, EventArgs e)
         {
-            // Placeholder - will be implemented later
-            MessageBox.Show("View Payslip feature coming soon!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            if (userId == 0)
+            {
+                MessageBox.Show("User information unavailable. Cannot view payslip.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            using (var payslipForm = new FrmPayslip(userId))
+            {
+                payslipForm.StartPosition = FormStartPosition.CenterParent;
+                payslipForm.ShowDialog(this);
+            }
         }
 
         private void btnProfileSettings_Click(object sender, EventArgs e)

@@ -30,20 +30,29 @@ namespace PayrollSample
 
         private void btnAttendanceManagement_Click(object sender, EventArgs e)
         {
-            // Placeholder - will be implemented later
-            MessageBox.Show("Attendance Management feature coming soon!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            using (var attendanceForm = new FrmAttendanceManagement())
+            {
+                attendanceForm.StartPosition = FormStartPosition.CenterParent;
+                attendanceForm.ShowDialog(this);
+            }
         }
 
         private void btnPayrollProcessing_Click(object sender, EventArgs e)
         {
-            // Placeholder - will be implemented later
-            MessageBox.Show("Payroll Processing feature coming soon!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            using (var payrollForm = new FrmPayrollProcessing())
+            {
+                payrollForm.StartPosition = FormStartPosition.CenterParent;
+                payrollForm.ShowDialog(this);
+            }
         }
 
         private void btnGenerateReports_Click(object sender, EventArgs e)
         {
-            // Placeholder - will be implemented later
-            MessageBox.Show("Generate Reports feature coming soon!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            using (var reportsForm = new FrmReports())
+            {
+                reportsForm.StartPosition = FormStartPosition.CenterParent;
+                reportsForm.ShowDialog(this);
+            }
         }
 
         private void btnAddAccount_Click(object sender, EventArgs e)
