@@ -32,6 +32,7 @@ namespace PayrollSample
             this.dtpTo = new System.Windows.Forms.DateTimePicker();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
+            this.lblCutoffInfo = new System.Windows.Forms.Label();
             this.btnLoadAttendance = new System.Windows.Forms.Button();
             this.btnGeneratePayroll = new System.Windows.Forms.Button();
             this.btnClose = new System.Windows.Forms.Button();
@@ -80,6 +81,17 @@ namespace PayrollSample
             this.label2.Size = new System.Drawing.Size(26, 15);
             this.label2.TabIndex = 3;
             this.label2.Text = "To:";
+            // 
+            // lblCutoffInfo
+            // 
+            this.lblCutoffInfo.AutoSize = true;
+            this.lblCutoffInfo.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblCutoffInfo.ForeColor = System.Drawing.Color.DarkBlue;
+            this.lblCutoffInfo.Location = new System.Drawing.Point(480, 18);
+            this.lblCutoffInfo.Name = "lblCutoffInfo";
+            this.lblCutoffInfo.Size = new System.Drawing.Size(200, 13);
+            this.lblCutoffInfo.TabIndex = 4;
+            this.lblCutoffInfo.Text = "Cutoff Period: 1-15 or 16-End of Month";
             // 
             // btnLoadAttendance
             // 
@@ -138,9 +150,10 @@ namespace PayrollSample
             this.panelDateRange.Controls.Add(this.dtpFrom);
             this.panelDateRange.Controls.Add(this.label2);
             this.panelDateRange.Controls.Add(this.dtpTo);
+            this.panelDateRange.Controls.Add(this.lblCutoffInfo);
             this.panelDateRange.Location = new System.Drawing.Point(12, 12);
             this.panelDateRange.Name = "panelDateRange";
-            this.panelDateRange.Size = new System.Drawing.Size(480, 50);
+            this.panelDateRange.Size = new System.Drawing.Size(700, 50);
             this.panelDateRange.TabIndex = 7;
             // 
             // panelButtons
@@ -177,6 +190,7 @@ namespace PayrollSample
         private System.Windows.Forms.DateTimePicker dtpTo;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label lblCutoffInfo;
         private System.Windows.Forms.Button btnLoadAttendance;
         private System.Windows.Forms.Button btnGeneratePayroll;
         private System.Windows.Forms.Button btnClose;

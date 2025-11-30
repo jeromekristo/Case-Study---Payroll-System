@@ -29,6 +29,7 @@ namespace PayrollSample
         private void InitializeComponent()
         {
             this.panelFilters = new System.Windows.Forms.Panel();
+            this.btnClose = new System.Windows.Forms.Button();
             this.btnExportExcel = new System.Windows.Forms.Button();
             this.btnExportPdf = new System.Windows.Forms.Button();
             this.btnGenerate = new System.Windows.Forms.Button();
@@ -47,6 +48,7 @@ namespace PayrollSample
             // 
             // panelFilters
             // 
+            this.panelFilters.Controls.Add(this.btnClose);
             this.panelFilters.Controls.Add(this.btnExportExcel);
             this.panelFilters.Controls.Add(this.btnExportPdf);
             this.panelFilters.Controls.Add(this.btnGenerate);
@@ -64,6 +66,16 @@ namespace PayrollSample
             this.panelFilters.Padding = new System.Windows.Forms.Padding(10);
             this.panelFilters.Size = new System.Drawing.Size(984, 120);
             this.panelFilters.TabIndex = 0;
+            // 
+            // btnClose
+            // 
+            this.btnClose.Location = new System.Drawing.Point(766, 72);
+            this.btnClose.Name = "btnClose";
+            this.btnClose.Size = new System.Drawing.Size(120, 30);
+            this.btnClose.TabIndex = 11;
+            this.btnClose.Text = "Close";
+            this.btnClose.UseVisualStyleBackColor = true;
+            this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
             // 
             // btnExportExcel
             // 
@@ -217,6 +229,7 @@ namespace PayrollSample
         private System.Windows.Forms.DataGridView dgvReports;
         private System.Windows.Forms.Button btnExportExcel;
         private System.Windows.Forms.Button btnExportPdf;
+        private System.Windows.Forms.Button btnClose;
     }
 }
 

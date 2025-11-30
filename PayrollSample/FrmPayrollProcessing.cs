@@ -15,6 +15,8 @@ namespace PayrollSample
             InitializeComponent();
             payrollData = new DataTable();
             InitializeDataTable();
+            InitializeCutoffDates();
+            SetupDatePickerEvents();
         }
 
         private void InitializeDataTable()
@@ -65,12 +67,132 @@ namespace PayrollSample
             }
         }
 
+        private void InitializeCutoffDates()
+        {
+            // Set default dates to current cutoff period
+            DateTime today = DateTime.Now;
+            var cutoff = GetCutoffPeriod(today);
+            dtpFrom.Value = cutoff.StartDate;
+            dtpTo.Value = cutoff.EndDate;
+            UpdateCutoffInfoLabel();
+        }
+
+        private void SetupDatePickerEvents()
+        {
+            // Auto-adjust to cutoff period when user changes dates
+            dtpFrom.ValueChanged += DtpFrom_ValueChanged;
+            dtpTo.ValueChanged += DtpTo_ValueChanged;
+        }
+
+        private void DtpFrom_ValueChanged(object sender, EventArgs e)
+        {
+            // Prevent infinite loop by temporarily removing event handler
+            dtpFrom.ValueChanged -= DtpFrom_ValueChanged;
+            dtpTo.ValueChanged -= DtpTo_ValueChanged;
+
+            // Auto-adjust to cutoff period start
+            var cutoff = GetCutoffPeriod(dtpFrom.Value);
+            dtpFrom.Value = cutoff.StartDate;
+            dtpTo.Value = cutoff.EndDate;
+            UpdateCutoffInfoLabel();
+
+            // Re-add event handlers
+            dtpFrom.ValueChanged += DtpFrom_ValueChanged;
+            dtpTo.ValueChanged += DtpTo_ValueChanged;
+        }
+
+        private void DtpTo_ValueChanged(object sender, EventArgs e)
+        {
+            // Prevent infinite loop by temporarily removing event handler
+            dtpFrom.ValueChanged -= DtpFrom_ValueChanged;
+            dtpTo.ValueChanged -= DtpTo_ValueChanged;
+
+            // Auto-adjust to cutoff period end
+            var cutoff = GetCutoffPeriod(dtpTo.Value);
+            dtpFrom.Value = cutoff.StartDate;
+            dtpTo.Value = cutoff.EndDate;
+            UpdateCutoffInfoLabel();
+
+            // Re-add event handlers
+            dtpFrom.ValueChanged += DtpFrom_ValueChanged;
+            dtpTo.ValueChanged += DtpTo_ValueChanged;
+        }
+
+        private void UpdateCutoffInfoLabel()
+        {
+            var cutoff = GetCutoffPeriod(dtpFrom.Value);
+            string periodType = cutoff.StartDate.Day == 1 ? "First Cutoff (1-15)" : "Second Cutoff (16-End)";
+            lblCutoffInfo.Text = $"Cutoff Period: {periodType} | Deductions applied per cutoff";
+        }
+
+        private struct CutoffPeriod
+        {
+            public DateTime StartDate;
+            public DateTime EndDate;
+        }
+
+        private CutoffPeriod GetCutoffPeriod(DateTime date)
+        {
+            int year = date.Year;
+            int month = date.Month;
+            int day = date.Day;
+
+            DateTime startDate;
+            DateTime endDate;
+
+            if (day <= 15)
+            {
+                // First cutoff: 1-15
+                startDate = new DateTime(year, month, 1);
+                endDate = new DateTime(year, month, 15);
+            }
+            else
+            {
+                // Second cutoff: 16-end of month
+                startDate = new DateTime(year, month, 16);
+                endDate = new DateTime(year, month, DateTime.DaysInMonth(year, month));
+            }
+
+            return new CutoffPeriod { StartDate = startDate, EndDate = endDate };
+        }
+
+        private bool IsValidCutoffPeriod(DateTime fromDate, DateTime toDate)
+        {
+            var cutoff = GetCutoffPeriod(fromDate);
+            return fromDate.Date == cutoff.StartDate.Date && toDate.Date == cutoff.EndDate.Date;
+        }
+
         private void btnLoadAttendance_Click(object sender, EventArgs e)
         {
             if (dtpFrom.Value > dtpTo.Value)
             {
                 MessageBox.Show("From date cannot be later than To date.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
+            }
+
+            // Validate that the date range is a valid cutoff period
+            if (!IsValidCutoffPeriod(dtpFrom.Value, dtpTo.Value))
+            {
+                var cutoff = GetCutoffPeriod(dtpFrom.Value);
+                var result = MessageBox.Show(
+                    $"The selected date range does not match a cutoff period.\n\n" +
+                    $"Cutoff periods are:\n" +
+                    $"• 1st-15th of each month\n" +
+                    $"• 16th-end of each month\n\n" +
+                    $"Would you like to adjust to the cutoff period: {cutoff.StartDate:MMM dd, yyyy} - {cutoff.EndDate:MMM dd, yyyy}?",
+                    "Invalid Cutoff Period",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
+
+                if (result == DialogResult.Yes)
+                {
+                    dtpFrom.Value = cutoff.StartDate;
+                    dtpTo.Value = cutoff.EndDate;
+                }
+                else
+                {
+                    return;
+                }
             }
 
             try
@@ -119,7 +241,9 @@ namespace PayrollSample
                         decimal grossPay = CalculateGrossPay(totalHours, emp.SalaryRate, emp.SalaryType);
 
                         // Calculate total deductions from Deductions table
-                        decimal deductions = CalculateTotalDeductions(conn, emp.UserID);
+                        // Deductions are calculated as percentage of gross pay and applied per cutoff period
+                        decimal deductions = CalculateTotalDeductions(conn, emp.UserID, grossPay);
+                        
                         decimal netPay = grossPay - deductions;
 
                         // Check if payslip already exists for this period
@@ -196,11 +320,11 @@ namespace PayrollSample
             }
         }
 
-        private decimal CalculateTotalDeductions(SqlConnection conn, int userId)
+        private decimal CalculateTotalDeductions(SqlConnection conn, int userId, decimal grossPay)
         {
             try
             {
-                // First, check if Deductions table exists and get its column names
+                // First, check if Deductions table exists
                 var tableExistsQuery = @"SELECT COUNT(*) 
                                        FROM INFORMATION_SCHEMA.TABLES 
                                        WHERE TABLE_NAME = 'Deductions'";
@@ -230,44 +354,116 @@ namespace PayrollSample
                     }
                 }
 
-                // Find column names (case-insensitive)
-                string userIdCol = FindColumnName(columnNames, new[] { "user_id", "UserID", "EmployeeID", "employee_id" });
-                string amountCol = FindColumnName(columnNames, new[] { "amount", "Amount", "deduction_amount", "DeductionAmount" });
-                string statusCol = FindColumnName(columnNames, new[] { "status", "Status", "active", "Active", "is_active", "IsActive" });
+                // Find column names (case-insensitive) - looking for the actual structure
+                string percentageCol = FindColumnName(columnNames, new[] { "percentage", "Percentage", "percent", "Percent" });
+                string mandatoryCol = FindColumnName(columnNames, new[] { "is_mandatory", "IsMandatory", "isMandatory", "mandatory", "Mandatory" });
+                string nameCol = FindColumnName(columnNames, new[] { "name", "Name", "deduction_name", "DeductionName" });
 
-                if (userIdCol == null || amountCol == null)
+                // Check if this is the percentage-based structure (deduction_id, name, percentage, is_mandatory)
+                if (percentageCol != null)
                 {
-                    return 0m; // Required columns not found
-                }
-
-                // Build query dynamically
-                string whereClause = $"[{userIdCol}] = @UserID";
-                if (statusCol != null)
-                {
-                    // Check if status column exists and add condition
-                    whereClause += $" AND ([{statusCol}] = 'Active' OR [{statusCol}] = 1 OR [{statusCol}] IS NULL)";
-                }
-
-                var query = $@"SELECT SUM([{amountCol}]) AS TotalDeductions
-                             FROM Deductions
-                             WHERE {whereClause}";
-
-                using (var cmd = new SqlCommand(query, conn))
-                {
-                    cmd.Parameters.AddWithValue("@UserID", userId);
-
-                    var result = cmd.ExecuteScalar();
-                    if (result == null || result == DBNull.Value)
+                    // This is a master deductions table with percentage-based deductions
+                    // Apply all mandatory deductions (or all if no mandatory flag exists)
+                    string whereClause = "";
+                    if (mandatoryCol != null)
                     {
-                        return 0m;
+                        // Only apply mandatory deductions
+                        whereClause = $"WHERE [{mandatoryCol}] = 1 OR [{mandatoryCol}] = 'true' OR [{mandatoryCol}] = 'True'";
+                    }
+                    // If no mandatory column, apply all deductions
+
+                    var query = $@"SELECT [{percentageCol}] AS Percentage
+                                 FROM Deductions
+                                 {whereClause}";
+
+                    decimal totalDeductionAmount = 0m;
+
+                    using (var cmd = new SqlCommand(query, conn))
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            if (reader["Percentage"] != DBNull.Value)
+                            {
+                                decimal percentage = Convert.ToDecimal(reader["Percentage"]);
+                                // Calculate deduction amount: grossPay * (percentage / 100)
+                                // Deductions are applied per cutoff period, not per day
+                                decimal deductionAmount = grossPay * (percentage / 100m);
+                                totalDeductionAmount += deductionAmount;
+                            }
+                        }
                     }
 
-                    return Convert.ToDecimal(result);
+                    // Return total deductions (applied once per cutoff period)
+                    return totalDeductionAmount;
                 }
+
+                // Fallback: Try to find employee-specific deductions table or linking table
+                // Check for employee_deductions or similar linking table
+                var linkingTableQuery = @"SELECT TABLE_NAME 
+                                        FROM INFORMATION_SCHEMA.TABLES 
+                                        WHERE TABLE_NAME IN ('EmployeeDeductions', 'employee_deductions', 'UserDeductions', 'user_deductions')";
+
+                using (var linkCmd = new SqlCommand(linkingTableQuery, conn))
+                {
+                    var linkTable = linkCmd.ExecuteScalar();
+                    if (linkTable != null && linkTable != DBNull.Value)
+                    {
+                        string linkTableName = linkTable.ToString();
+                        // Try to get deductions from linking table
+                        var linkQuery = $@"SELECT d.[{percentageCol ?? "percentage"}]
+                                          FROM [{linkTableName}] ed
+                                          INNER JOIN Deductions d ON ed.deduction_id = d.deduction_id
+                                          WHERE ed.user_id = @UserID OR ed.UserID = @UserID";
+
+                        decimal totalDeductionAmount = 0m;
+                        using (var cmd = new SqlCommand(linkQuery, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@UserID", userId);
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    if (reader[0] != DBNull.Value && percentageCol != null)
+                                    {
+                                        decimal percentage = Convert.ToDecimal(reader[0]);
+                                        decimal deductionAmount = grossPay * (percentage / 100m);
+                                        totalDeductionAmount += deductionAmount;
+                                    }
+                                }
+                            }
+                        }
+                        return totalDeductionAmount;
+                    }
+                }
+
+                // If no percentage column found, try the old structure (amount-based)
+                string amountCol = FindColumnName(columnNames, new[] { "amount", "Amount", "deduction_amount", "DeductionAmount" });
+                string userIdCol = FindColumnName(columnNames, new[] { "user_id", "UserID", "EmployeeID", "employee_id" });
+
+                if (amountCol != null && userIdCol != null)
+                {
+                    // Old structure: direct employee deductions with amounts
+                    var query = $@"SELECT SUM([{amountCol}]) AS TotalDeductions
+                                 FROM Deductions
+                                 WHERE [{userIdCol}] = @UserID";
+
+                    using (var cmd = new SqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@UserID", userId);
+                        var result = cmd.ExecuteScalar();
+                        if (result != null && result != DBNull.Value)
+                        {
+                            return Convert.ToDecimal(result);
+                        }
+                    }
+                }
+
+                return 0m;
             }
-            catch
+            catch (Exception ex)
             {
-                // If Deductions table doesn't exist or has different structure, return 0
+                System.Diagnostics.Debug.WriteLine($"CalculateTotalDeductions error for UserID {userId}: {ex.Message}");
                 return 0m;
             }
         }

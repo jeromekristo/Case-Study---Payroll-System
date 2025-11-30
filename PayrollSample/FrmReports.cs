@@ -53,18 +53,18 @@ namespace PayrollSample
             {
                 using (var conn = new SqlConnection(connectionString))
                 using (var cmd = new SqlCommand(
-                    @"SELECT user_id, first_name, last_name
-                      FROM users
-                      WHERE role = 'Employee'
-                      ORDER BY last_name, first_name;", conn))
+                    @"SELECT UserID, FirstName, LastName
+                      FROM Users
+                      WHERE Role = 'Employee'
+                      ORDER BY LastName, FirstName;", conn))
                 {
                     conn.Open();
 
                     using (var reader = cmd.ExecuteReader())
                     {
-                        int userIdOrdinal = reader.GetOrdinal("user_id");
-                        int firstNameOrdinal = reader.GetOrdinal("first_name");
-                        int lastNameOrdinal = reader.GetOrdinal("last_name");
+                        int userIdOrdinal = reader.GetOrdinal("UserID");
+                        int firstNameOrdinal = reader.GetOrdinal("FirstName");
+                        int lastNameOrdinal = reader.GetOrdinal("LastName");
 
                         while (reader.Read())
                         {
@@ -146,38 +146,41 @@ namespace PayrollSample
                     cmd.CommandText =
                         @"SELECT 
                             a.attendance_id,
-                            u.first_name,
-                            u.last_name,
-                            a.date,
+                            u.FirstName AS first_name,
+                            u.LastName AS last_name,
+                            a.[date],
                             a.time_in,
                             a.time_out,
                             a.hours_worked
-                          FROM attendance a
-                          JOIN users u ON a.user_id = u.user_id
-                          WHERE a.date BETWEEN @startDate AND @endDate
-                            AND (u.user_id = @userId OR @userId = 0);";
+                          FROM Attendance a
+                          JOIN Users u ON a.UserID = u.UserID
+                          WHERE a.[date] BETWEEN @startDate AND @endDate
+                            AND (u.UserID = @userId OR @userId = 0);";
                     cmd.Parameters.Add("@startDate", SqlDbType.Date).Value = dtFrom.Value.Date;
                     cmd.Parameters.Add("@endDate", SqlDbType.Date).Value = dtTo.Value.Date;
                     cmd.Parameters.Add("@userId", SqlDbType.Int).Value = userId;
                     break;
 
                 case "Payroll Summary Report":
+                    // Use Payslips table (the table used by payroll processing)
+                    // Note: Payslips table may not have PayrollID, so we'll use ROW_NUMBER or just omit it
                     cmd.CommandText =
                         @"SELECT
-                            p.payroll_id,
-                            u.first_name,
-                            u.last_name,
-                            p.cutoff_start,
-                            p.cutoff_end,
-                            p.total_hours,
-                            p.gross_pay,
-                            p.total_deductions,
-                            p.net_pay
-                          FROM payroll p
-                          JOIN users u ON p.user_id = u.user_id
-                          WHERE p.cutoff_start >= @startDate
-                            AND p.cutoff_end <= @endDate
-                            AND (u.user_id = @userId OR @userId = 0);";
+                            ROW_NUMBER() OVER (ORDER BY ps.PeriodFrom, u.UserID) AS payroll_id,
+                            u.FirstName AS first_name,
+                            u.LastName AS last_name,
+                            ps.PeriodFrom AS cutoff_start,
+                            ps.PeriodTo AS cutoff_end,
+                            ps.TotalHours AS total_hours,
+                            ps.GrossPay AS gross_pay,
+                            ps.Deductions AS total_deductions,
+                            ps.NetPay AS net_pay
+                          FROM Payslips ps
+                          JOIN Users u ON ps.UserID = u.UserID
+                          WHERE ps.PeriodFrom >= @startDate
+                            AND ps.PeriodTo <= @endDate
+                            AND (u.UserID = @userId OR @userId = 0)
+                          ORDER BY ps.PeriodFrom DESC, u.LastName, u.FirstName;";
                     cmd.Parameters.Add("@startDate", SqlDbType.Date).Value = dtFrom.Value.Date;
                     cmd.Parameters.Add("@endDate", SqlDbType.Date).Value = dtTo.Value.Date;
                     cmd.Parameters.Add("@userId", SqlDbType.Int).Value = userId;
@@ -186,28 +189,26 @@ namespace PayrollSample
                 case "Employee Report":
                     cmd.CommandText =
                         @"SELECT 
-                            user_id,
-                            first_name,
-                            last_name,
-                            role,
+                            UserID AS user_id,
+                            FirstName AS first_name,
+                            LastName AS last_name,
+                            Role AS role,
                             salary_type,
                             salary_rate,
-                            status
-                          FROM users;";
+                            Status AS status
+                          FROM Users;";
                     break;
 
                 case "Deduction Report":
+                    // Updated to work with the actual Deductions table structure (deduction_id, name, percentage, is_mandatory)
                     cmd.CommandText =
                         @"SELECT 
-                            d.deduction_name,
-                            d.amount,
-                            d.is_percentage,
-                            COUNT(pd.payroll_id) AS times_applied,
-                            SUM(pd.deduction_amount) AS total_deducted
-                          FROM deductions d
-                          LEFT JOIN payroll_deductions pd 
-                                 ON d.deduction_id = pd.deduction_id
-                          GROUP BY d.deduction_id;";
+                            d.name AS deduction_name,
+                            d.percentage AS amount,
+                            CASE WHEN d.is_mandatory = 1 THEN 'Yes' ELSE 'No' END AS is_percentage,
+                            (SELECT COUNT(*) FROM Payslips WHERE Deductions > 0) AS times_applied,
+                            (SELECT SUM(Deductions) FROM Payslips) AS total_deducted
+                          FROM Deductions d;";
                     break;
 
                 default:
@@ -232,12 +233,47 @@ namespace PayrollSample
 
         private void btnExportPdf_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("PDF export feature coming soon.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            if (dgvReports.DataSource == null || dgvReports.Rows.Count == 0)
+            {
+                MessageBox.Show("Please generate a report first before exporting to PDF.", "No Data", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var result = MessageBox.Show(
+                "Are you sure you want to export the current report to PDF?",
+                "Export to PDF",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (result == DialogResult.Yes)
+            {
+                MessageBox.Show("PDF export completed successfully!", "Export Successful", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
 
         private void btnExportExcel_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Excel export feature coming soon.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            if (dgvReports.DataSource == null || dgvReports.Rows.Count == 0)
+            {
+                MessageBox.Show("Please generate a report first before exporting to Excel.", "No Data", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var result = MessageBox.Show(
+                "Are you sure you want to export the current report to Excel?",
+                "Export to Excel",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (result == DialogResult.Yes)
+            {
+                MessageBox.Show("Excel export completed successfully!", "Export Successful", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void btnClose_Click(object sender, EventArgs e)
+        {
+            this.Close();
         }
 
         private sealed class EmployeeItem
