@@ -14,6 +14,11 @@ namespace PayrollSample
             InitializeComponent();
             this.currentUsername = username;
             LoadUserData();
+
+            // Users can only change their password; lock name and username fields
+            tbFirstName.ReadOnly = true;
+            tbLastName.ReadOnly = true;
+            tbUsername.ReadOnly = true;
         }
 
         private void LoadUserData()
@@ -45,17 +50,13 @@ namespace PayrollSample
 
         private void btnSave_Click(object sender, EventArgs e)
         {
-            string firstName = tbFirstName.Text.Trim();
-            string lastName = tbLastName.Text.Trim();
-            string username = tbUsername.Text.Trim();
+            // Users are only allowed to change their password here
             string password = tbPassword.Text.Trim();
             string confirmPassword = tbConfirmPassword.Text.Trim();
 
-            if (string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName) ||
-                string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password) ||
-                string.IsNullOrWhiteSpace(confirmPassword))
+            if (string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(confirmPassword))
             {
-                MessageBox.Show("Please fill in all fields.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Please enter and confirm your new password.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -68,55 +69,29 @@ namespace PayrollSample
             try
             {
                 using (var conn = new SqlConnection(connectionString))
+                using (var updateCmd = new SqlCommand("UPDATE Users SET Password=@p WHERE Username=@username", conn))
                 {
-                    // Check if username is being changed and if it already exists
-                    if (username != currentUsername)
-                    {
-                        using (var checkCmd = new SqlCommand("SELECT COUNT(*) FROM Users WHERE Username=@username", conn))
-                        {
-                            checkCmd.Parameters.AddWithValue("@username", username);
-                            conn.Open();
-                            int count = (int)checkCmd.ExecuteScalar();
-                            conn.Close();
+                    updateCmd.Parameters.AddWithValue("@p", password);
+                    updateCmd.Parameters.AddWithValue("@username", currentUsername);
 
-                            if (count > 0)
-                            {
-                                MessageBox.Show("Username already exists. Please choose a different username.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                                return;
-                            }
-                        }
+                    conn.Open();
+                    int rows = updateCmd.ExecuteNonQuery();
+
+                    if (rows > 0)
+                    {
+                        MessageBox.Show("Password updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        this.DialogResult = DialogResult.OK;
+                        this.Close();
                     }
-
-                
-                    using (var updateCmd = new SqlCommand("UPDATE Users SET FirstName=@fn, LastName=@ln, Username=@u, Password=@p WHERE Username=@oldUsername", conn))
+                    else
                     {
-                        updateCmd.Parameters.AddWithValue("@fn", firstName);
-                        updateCmd.Parameters.AddWithValue("@ln", lastName);
-                        updateCmd.Parameters.AddWithValue("@u", username);
-                        updateCmd.Parameters.AddWithValue("@p", password);
-                        updateCmd.Parameters.AddWithValue("@oldUsername", currentUsername);
-
-                        conn.Open();
-                        int rows = updateCmd.ExecuteNonQuery();
-                        conn.Close();
-
-                        if (rows > 0)
-                        {
-                            MessageBox.Show("Profile updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            this.currentUsername = username; 
-                            this.DialogResult = DialogResult.OK;
-                            this.Close();
-                        }
-                        else
-                        {
-                            MessageBox.Show("Failed to update profile.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
+                        MessageBox.Show("Failed to update password.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error updating profile: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Error updating password: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 

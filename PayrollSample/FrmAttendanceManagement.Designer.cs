@@ -28,10 +28,10 @@ namespace PayrollSample
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle10 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle11 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle12 = new System.Windows.Forms.DataGridViewCellStyle();
             this.panelFilters = new System.Windows.Forms.Panel();
             this.btnClose = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
@@ -43,6 +43,9 @@ namespace PayrollSample
             this.lblTo = new System.Windows.Forms.Label();
             this.dtFrom = new System.Windows.Forms.DateTimePicker();
             this.lblFrom = new System.Windows.Forms.Label();
+            this.txtSearch = new System.Windows.Forms.TextBox();
+            this.btnSearch = new System.Windows.Forms.Button();
+            this.lblSearch = new System.Windows.Forms.Label();
             this.cmbEmployee = new System.Windows.Forms.ComboBox();
             this.lblEmployee = new System.Windows.Forms.Label();
             this.dgvAttendance = new System.Windows.Forms.DataGridView();
@@ -70,6 +73,9 @@ namespace PayrollSample
             this.panelFilters.Controls.Add(this.lblTo);
             this.panelFilters.Controls.Add(this.dtFrom);
             this.panelFilters.Controls.Add(this.lblFrom);
+            this.panelFilters.Controls.Add(this.txtSearch);
+            this.panelFilters.Controls.Add(this.btnSearch);
+            this.panelFilters.Controls.Add(this.lblSearch);
             this.panelFilters.Controls.Add(this.cmbEmployee);
             this.panelFilters.Controls.Add(this.lblEmployee);
             this.panelFilters.Dock = System.Windows.Forms.DockStyle.Top;
@@ -82,7 +88,7 @@ namespace PayrollSample
             // btnClose
             // 
             this.btnClose.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnClose.Location = new System.Drawing.Point(741, 63);
+            this.btnClose.Location = new System.Drawing.Point(852, 62);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(120, 35);
             this.btnClose.TabIndex = 11;
@@ -94,7 +100,7 @@ namespace PayrollSample
             // 
             this.btnCancel.Enabled = false;
             this.btnCancel.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnCancel.Location = new System.Drawing.Point(615, 63);
+            this.btnCancel.Location = new System.Drawing.Point(726, 62);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(120, 35);
             this.btnCancel.TabIndex = 10;
@@ -106,7 +112,7 @@ namespace PayrollSample
             // 
             this.btnSave.Enabled = false;
             this.btnSave.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnSave.Location = new System.Drawing.Point(489, 63);
+            this.btnSave.Location = new System.Drawing.Point(600, 62);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(120, 35);
             this.btnSave.TabIndex = 9;
@@ -118,7 +124,7 @@ namespace PayrollSample
             // 
             this.btnDelete.Enabled = false;
             this.btnDelete.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnDelete.Location = new System.Drawing.Point(363, 63);
+            this.btnDelete.Location = new System.Drawing.Point(474, 62);
             this.btnDelete.Name = "btnDelete";
             this.btnDelete.Size = new System.Drawing.Size(120, 35);
             this.btnDelete.TabIndex = 8;
@@ -130,7 +136,7 @@ namespace PayrollSample
             // 
             this.btnEdit.Enabled = false;
             this.btnEdit.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnEdit.Location = new System.Drawing.Point(237, 63);
+            this.btnEdit.Location = new System.Drawing.Point(348, 62);
             this.btnEdit.Name = "btnEdit";
             this.btnEdit.Size = new System.Drawing.Size(120, 35);
             this.btnEdit.TabIndex = 7;
@@ -141,7 +147,7 @@ namespace PayrollSample
             // btnLoad
             // 
             this.btnLoad.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnLoad.Location = new System.Drawing.Point(111, 63);
+            this.btnLoad.Location = new System.Drawing.Point(222, 62);
             this.btnLoad.Name = "btnLoad";
             this.btnLoad.Size = new System.Drawing.Size(120, 35);
             this.btnLoad.TabIndex = 6;
@@ -153,7 +159,7 @@ namespace PayrollSample
             // 
             this.dtTo.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.dtTo.Format = System.Windows.Forms.DateTimePickerFormat.Short;
-            this.dtTo.Location = new System.Drawing.Point(602, 24);
+            this.dtTo.Location = new System.Drawing.Point(597, 26);
             this.dtTo.Name = "dtTo";
             this.dtTo.Size = new System.Drawing.Size(140, 24);
             this.dtTo.TabIndex = 5;
@@ -183,9 +189,40 @@ namespace PayrollSample
             this.lblFrom.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblFrom.Location = new System.Drawing.Point(360, 28);
             this.lblFrom.Name = "lblFrom";
-            this.lblFrom.Size = new System.Drawing.Size(47, 18);
+            this.lblFrom.Size = new System.Drawing.Size(48, 18);
             this.lblFrom.TabIndex = 2;
             this.lblFrom.Text = "From:";
+            // 
+            // txtSearch
+            // 
+            this.txtSearch.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F);
+            this.txtSearch.Location = new System.Drawing.Point(104, 62);
+            this.txtSearch.Multiline = true;
+            this.txtSearch.Name = "txtSearch";
+            this.txtSearch.Size = new System.Drawing.Size(112, 35);
+            this.txtSearch.TabIndex = 13;
+            this.txtSearch.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtSearch_KeyDown);
+            // 
+            // btnSearch
+            // 
+            this.btnSearch.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnSearch.Location = new System.Drawing.Point(12, 62);
+            this.btnSearch.Name = "btnSearch";
+            this.btnSearch.Size = new System.Drawing.Size(86, 35);
+            this.btnSearch.TabIndex = 12;
+            this.btnSearch.Text = "Search";
+            this.btnSearch.UseVisualStyleBackColor = true;
+            this.btnSearch.Click += new System.EventHandler(this.btnSearch_Click);
+            // 
+            // lblSearch
+            // 
+            this.lblSearch.AutoSize = true;
+            this.lblSearch.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblSearch.Location = new System.Drawing.Point(563, 28);
+            this.lblSearch.Name = "lblSearch";
+            this.lblSearch.Size = new System.Drawing.Size(71, 18);
+            this.lblSearch.TabIndex = 14;
+            this.lblSearch.Text = "Search :  ";
             // 
             // cmbEmployee
             // 
@@ -203,7 +240,7 @@ namespace PayrollSample
             this.lblEmployee.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblEmployee.Location = new System.Drawing.Point(10, 28);
             this.lblEmployee.Name = "lblEmployee";
-            this.lblEmployee.Size = new System.Drawing.Size(120, 18);
+            this.lblEmployee.Size = new System.Drawing.Size(123, 18);
             this.lblEmployee.TabIndex = 0;
             this.lblEmployee.Text = "Select Employee:";
             // 
@@ -269,38 +306,38 @@ namespace PayrollSample
             // date
             // 
             this.date.DataPropertyName = "date";
+            dataGridViewCellStyle9.Format = "d";
+            this.date.DefaultCellStyle = dataGridViewCellStyle9;
             this.date.HeaderText = "Date";
             this.date.Name = "date";
             this.date.ReadOnly = true;
-            dataGridViewCellStyle1.Format = "d";
-            this.date.DefaultCellStyle = dataGridViewCellStyle1;
             // 
             // time_in
             // 
             this.time_in.DataPropertyName = "time_in";
+            dataGridViewCellStyle10.Format = "hh\\:mm";
+            this.time_in.DefaultCellStyle = dataGridViewCellStyle10;
             this.time_in.HeaderText = "Time In";
             this.time_in.Name = "time_in";
             this.time_in.ReadOnly = true;
-            dataGridViewCellStyle3.Format = "hh\\:mm";
-            this.time_in.DefaultCellStyle = dataGridViewCellStyle3;
             // 
             // time_out
             // 
             this.time_out.DataPropertyName = "time_out";
+            dataGridViewCellStyle11.Format = "hh\\:mm";
+            this.time_out.DefaultCellStyle = dataGridViewCellStyle11;
             this.time_out.HeaderText = "Time Out";
             this.time_out.Name = "time_out";
             this.time_out.ReadOnly = true;
-            dataGridViewCellStyle4.Format = "hh\\:mm";
-            this.time_out.DefaultCellStyle = dataGridViewCellStyle4;
             // 
             // hours_worked
             // 
             this.hours_worked.DataPropertyName = "hours_worked";
+            dataGridViewCellStyle12.Format = "N2";
+            this.hours_worked.DefaultCellStyle = dataGridViewCellStyle12;
             this.hours_worked.HeaderText = "Hours Worked";
             this.hours_worked.Name = "hours_worked";
             this.hours_worked.ReadOnly = true;
-            dataGridViewCellStyle2.Format = "N2";
-            this.hours_worked.DefaultCellStyle = dataGridViewCellStyle2;
             // 
             // FrmAttendanceManagement
             // 
@@ -309,9 +346,6 @@ namespace PayrollSample
             this.ClientSize = new System.Drawing.Size(984, 561);
             this.Controls.Add(this.dgvAttendance);
             this.Controls.Add(this.panelFilters);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
-            this.MaximizeBox = true;
-            this.MinimizeBox = true;
             this.Name = "FrmAttendanceManagement";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Attendance Management";
@@ -333,12 +367,15 @@ namespace PayrollSample
         private System.Windows.Forms.Button btnDelete;
         private System.Windows.Forms.Button btnEdit;
         private System.Windows.Forms.Button btnLoad;
+        private System.Windows.Forms.Button btnSearch;
         private System.Windows.Forms.DateTimePicker dtTo;
         private System.Windows.Forms.Label lblTo;
         private System.Windows.Forms.DateTimePicker dtFrom;
         private System.Windows.Forms.Label lblFrom;
         private System.Windows.Forms.ComboBox cmbEmployee;
         private System.Windows.Forms.Label lblEmployee;
+        private System.Windows.Forms.TextBox txtSearch;
+        private System.Windows.Forms.Label lblSearch;
         private System.Windows.Forms.DataGridView dgvAttendance;
         private System.Windows.Forms.DataGridViewTextBoxColumn attendance_id;
         private System.Windows.Forms.DataGridViewTextBoxColumn user_id;

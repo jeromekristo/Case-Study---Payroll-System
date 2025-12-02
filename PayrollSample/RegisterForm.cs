@@ -19,12 +19,20 @@ namespace PayrollSample
 			string lastName = tbLastName.Text.Trim();
 			string username = tbUsername.Text.Trim();
 			string password = tbPassword.Text.Trim();
+			string confirmPassword = tbConfirmPassword.Text.Trim();
 			string selectedRoleDisplay = cmbRole.SelectedItem as string;
 
 			if (string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName) || 
-			    string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+			    string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password) ||
+				string.IsNullOrWhiteSpace(confirmPassword))
 			{
 				MessageBox.Show("Please fill in all fields.");
+				return;
+			}
+
+			if (!string.Equals(password, confirmPassword))
+			{
+				MessageBox.Show("Password and Confirm Password do not match.");
 				return;
 			}
 

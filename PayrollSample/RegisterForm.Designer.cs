@@ -32,11 +32,13 @@ namespace PayrollSample
 			this.tbLastName = new System.Windows.Forms.TextBox();
 			this.tbUsername = new System.Windows.Forms.TextBox();
 			this.tbPassword = new System.Windows.Forms.TextBox();
+			this.tbConfirmPassword = new System.Windows.Forms.TextBox();
 			this.btnRegister = new System.Windows.Forms.Button();
 			this.lblFirstName = new System.Windows.Forms.Label();
 			this.lblLastName = new System.Windows.Forms.Label();
 			this.lblUser = new System.Windows.Forms.Label();
 			this.lblPass = new System.Windows.Forms.Label();
+			this.lblConfirmPass = new System.Windows.Forms.Label();
 			this.lblRole = new System.Windows.Forms.Label();
 			this.cmbRole = new System.Windows.Forms.ComboBox();
 			this.SuspendLayout();
@@ -77,7 +79,7 @@ namespace PayrollSample
 			// btnRegister
 			// 
 			this.btnRegister.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.btnRegister.Location = new System.Drawing.Point(154, 230);
+			this.btnRegister.Location = new System.Drawing.Point(154, 268);
 			this.btnRegister.Name = "btnRegister";
 			this.btnRegister.Size = new System.Drawing.Size(180, 40);
 			this.btnRegister.TabIndex = 4;
@@ -125,11 +127,30 @@ namespace PayrollSample
 			this.lblPass.TabIndex = 8;
 			this.lblPass.Text = "Password:";
 			// 
+			// tbConfirmPassword
+			// 
+			this.tbConfirmPassword.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.tbConfirmPassword.Location = new System.Drawing.Point(154, 192);
+			this.tbConfirmPassword.Name = "tbConfirmPassword";
+			this.tbConfirmPassword.Size = new System.Drawing.Size(250, 26);
+			this.tbConfirmPassword.TabIndex = 4;
+			this.tbConfirmPassword.UseSystemPasswordChar = true;
+			// 
+			// lblConfirmPass
+			// 
+			this.lblConfirmPass.AutoSize = true;
+			this.lblConfirmPass.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblConfirmPass.Location = new System.Drawing.Point(10, 195);
+			this.lblConfirmPass.Name = "lblConfirmPass";
+			this.lblConfirmPass.Size = new System.Drawing.Size(132, 20);
+			this.lblConfirmPass.TabIndex = 9;
+			this.lblConfirmPass.Text = "Confirm Password:";
+			// 
 			// lblRole
 			// 
 			this.lblRole.AutoSize = true;
 			this.lblRole.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.lblRole.Location = new System.Drawing.Point(60, 195);
+			this.lblRole.Location = new System.Drawing.Point(60, 231);
 			this.lblRole.Name = "lblRole";
 			this.lblRole.Size = new System.Drawing.Size(47, 20);
 			this.lblRole.TabIndex = 9;
@@ -143,7 +164,7 @@ namespace PayrollSample
 			this.cmbRole.Items.AddRange(new object[] {
             "Employee (Full-Time)",
             "Part-Time"});
-			this.cmbRole.Location = new System.Drawing.Point(154, 192);
+			this.cmbRole.Location = new System.Drawing.Point(154, 228);
 			this.cmbRole.Name = "cmbRole";
 			this.cmbRole.Size = new System.Drawing.Size(250, 28);
 			this.cmbRole.TabIndex = 5;
@@ -152,7 +173,9 @@ namespace PayrollSample
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(450, 300);
+			this.ClientSize = new System.Drawing.Size(450, 330);
+			this.Controls.Add(this.tbConfirmPassword);
+			this.Controls.Add(this.lblConfirmPass);
 			this.Controls.Add(this.cmbRole);
 			this.Controls.Add(this.lblRole);
 			this.Controls.Add(this.lblPass);
@@ -186,6 +209,8 @@ namespace PayrollSample
 		private System.Windows.Forms.Label lblLastName;
 		private System.Windows.Forms.Label lblUser;
 		private System.Windows.Forms.Label lblPass;
+		private System.Windows.Forms.TextBox tbConfirmPassword;
+		private System.Windows.Forms.Label lblConfirmPass;
 		private System.Windows.Forms.Label lblRole;
 		private System.Windows.Forms.ComboBox cmbRole;
 	}

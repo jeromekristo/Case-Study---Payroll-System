@@ -75,6 +75,21 @@ namespace PayrollSample
             LoadAttendance();
         }
 
+        private void btnSearch_Click(object sender, EventArgs e)
+        {
+            LoadAttendance();
+        }
+
+        private void txtSearch_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                LoadAttendance();
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+            }
+        }
+
         private void LoadAttendance()
         {
             if (isEditing)
@@ -105,12 +120,22 @@ namespace PayrollSample
                       JOIN Users u ON a.UserID = u.UserID
                       WHERE a.[date] BETWEEN @from AND @to
                         AND (@userId = 0 OR u.UserID = @userId)
+                        AND (
+                            @searchTerm = '' OR 
+                            u.FirstName LIKE @likeSearch OR 
+                            u.LastName LIKE @likeSearch OR 
+                            u.Username LIKE @likeSearch
+                        )
                       ORDER BY a.date DESC;", conn))
                 using (var adapter = new SqlDataAdapter(cmd))
                 {
                     cmd.Parameters.Add("@from", SqlDbType.Date).Value = dtFrom.Value.Date;
                     cmd.Parameters.Add("@to", SqlDbType.Date).Value = dtTo.Value.Date;
                     cmd.Parameters.Add("@userId", SqlDbType.Int).Value = GetSelectedUserId();
+
+                    string searchTerm = (txtSearch.Text ?? string.Empty).Trim();
+                    cmd.Parameters.Add("@searchTerm", SqlDbType.NVarChar, 100).Value = searchTerm;
+                    cmd.Parameters.Add("@likeSearch", SqlDbType.NVarChar, 100).Value = "%" + searchTerm + "%";
 
                     var table = new DataTable();
                     adapter.Fill(table);
