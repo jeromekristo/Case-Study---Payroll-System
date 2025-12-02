@@ -32,10 +32,12 @@ namespace PayrollSample
             this.tbLastName = new System.Windows.Forms.TextBox();
             this.tbUsername = new System.Windows.Forms.TextBox();
             this.tbPassword = new System.Windows.Forms.TextBox();
+            this.tbConfirmPassword = new System.Windows.Forms.TextBox();
             this.lblFirstName = new System.Windows.Forms.Label();
             this.lblLastName = new System.Windows.Forms.Label();
             this.lblUsername = new System.Windows.Forms.Label();
             this.lblPassword = new System.Windows.Forms.Label();
+            this.lblConfirmPassword = new System.Windows.Forms.Label();
             this.btnSave = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
             this.groupBoxProfile = new System.Windows.Forms.GroupBox();
@@ -70,6 +72,14 @@ namespace PayrollSample
             this.tbPassword.Size = new System.Drawing.Size(200, 20);
             this.tbPassword.TabIndex = 3;
             this.tbPassword.UseSystemPasswordChar = true;
+            // 
+            // tbConfirmPassword
+            // 
+            this.tbConfirmPassword.Location = new System.Drawing.Point(120, 190);
+            this.tbConfirmPassword.Name = "tbConfirmPassword";
+            this.tbConfirmPassword.Size = new System.Drawing.Size(200, 20);
+            this.tbConfirmPassword.TabIndex = 4;
+            this.tbConfirmPassword.UseSystemPasswordChar = true;
             // 
             // lblFirstName
             // 
@@ -107,10 +117,19 @@ namespace PayrollSample
             this.lblPassword.TabIndex = 7;
             this.lblPassword.Text = "Password:";
             // 
+            // lblConfirmPassword
+            // 
+            this.lblConfirmPassword.AutoSize = true;
+            this.lblConfirmPassword.Location = new System.Drawing.Point(20, 193);
+            this.lblConfirmPassword.Name = "lblConfirmPassword";
+            this.lblConfirmPassword.Size = new System.Drawing.Size(94, 13);
+            this.lblConfirmPassword.TabIndex = 8;
+            this.lblConfirmPassword.Text = "Confirm Password:";
+            // 
             // btnSave
             // 
             this.btnSave.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnSave.Location = new System.Drawing.Point(120, 200);
+            this.btnSave.Location = new System.Drawing.Point(120, 230);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(90, 30);
             this.btnSave.TabIndex = 8;
@@ -121,7 +140,7 @@ namespace PayrollSample
             // btnCancel
             // 
             this.btnCancel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnCancel.Location = new System.Drawing.Point(230, 200);
+            this.btnCancel.Location = new System.Drawing.Point(230, 230);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(90, 30);
             this.btnCancel.TabIndex = 9;
@@ -134,14 +153,16 @@ namespace PayrollSample
             this.groupBoxProfile.Controls.Add(this.lblPassword);
             this.groupBoxProfile.Controls.Add(this.lblUsername);
             this.groupBoxProfile.Controls.Add(this.lblLastName);
+            this.groupBoxProfile.Controls.Add(this.lblConfirmPassword);
             this.groupBoxProfile.Controls.Add(this.lblFirstName);
+            this.groupBoxProfile.Controls.Add(this.tbConfirmPassword);
             this.groupBoxProfile.Controls.Add(this.tbPassword);
             this.groupBoxProfile.Controls.Add(this.tbUsername);
             this.groupBoxProfile.Controls.Add(this.tbLastName);
             this.groupBoxProfile.Controls.Add(this.tbFirstName);
             this.groupBoxProfile.Location = new System.Drawing.Point(12, 12);
             this.groupBoxProfile.Name = "groupBoxProfile";
-            this.groupBoxProfile.Size = new System.Drawing.Size(356, 178);
+            this.groupBoxProfile.Size = new System.Drawing.Size(356, 210);
             this.groupBoxProfile.TabIndex = 10;
             this.groupBoxProfile.TabStop = false;
             this.groupBoxProfile.Text = "Profile Information";
@@ -151,7 +172,7 @@ namespace PayrollSample
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(380, 250);
+            this.ClientSize = new System.Drawing.Size(380, 280);
             this.Controls.Add(this.groupBoxProfile);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnSave);
@@ -173,10 +194,12 @@ namespace PayrollSample
         private System.Windows.Forms.TextBox tbLastName;
         private System.Windows.Forms.TextBox tbUsername;
         private System.Windows.Forms.TextBox tbPassword;
+        private System.Windows.Forms.TextBox tbConfirmPassword;
         private System.Windows.Forms.Label lblFirstName;
         private System.Windows.Forms.Label lblLastName;
         private System.Windows.Forms.Label lblUsername;
         private System.Windows.Forms.Label lblPassword;
+        private System.Windows.Forms.Label lblConfirmPassword;
         private System.Windows.Forms.Button btnSave;
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.GroupBox groupBoxProfile;

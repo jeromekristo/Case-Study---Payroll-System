@@ -31,6 +31,8 @@ namespace PayrollSample
             this.groupBoxPayslip = new System.Windows.Forms.GroupBox();
             this.lblNetPay = new System.Windows.Forms.Label();
             this.lblNetPayValue = new System.Windows.Forms.Label();
+            this.lblLateDeduction = new System.Windows.Forms.Label();
+            this.lblLateDeductionValue = new System.Windows.Forms.Label();
             this.lblTotalDeductions = new System.Windows.Forms.Label();
             this.lblTotalDeductionsValue = new System.Windows.Forms.Label();
             this.lblGrossPay = new System.Windows.Forms.Label();
@@ -59,6 +61,8 @@ namespace PayrollSample
             this.groupBoxPayslip.Controls.Add(this.lblNetPayValue);
             this.groupBoxPayslip.Controls.Add(this.lblTotalDeductions);
             this.groupBoxPayslip.Controls.Add(this.lblTotalDeductionsValue);
+            this.groupBoxPayslip.Controls.Add(this.lblLateDeduction);
+            this.groupBoxPayslip.Controls.Add(this.lblLateDeductionValue);
             this.groupBoxPayslip.Controls.Add(this.lblGrossPay);
             this.groupBoxPayslip.Controls.Add(this.lblGrossPayValue);
             this.groupBoxPayslip.Controls.Add(this.lblHourlyRate);
@@ -72,7 +76,7 @@ namespace PayrollSample
             this.groupBoxPayslip.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.groupBoxPayslip.Location = new System.Drawing.Point(12, 12);
             this.groupBoxPayslip.Name = "groupBoxPayslip";
-            this.groupBoxPayslip.Size = new System.Drawing.Size(560, 380);
+            this.groupBoxPayslip.Size = new System.Drawing.Size(560, 400);
             this.groupBoxPayslip.TabIndex = 0;
             this.groupBoxPayslip.TabStop = false;
             this.groupBoxPayslip.Text = "Payslip Details";
@@ -81,7 +85,7 @@ namespace PayrollSample
             // 
             this.lblNetPay.AutoSize = true;
             this.lblNetPay.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblNetPay.Location = new System.Drawing.Point(30, 320);
+            this.lblNetPay.Location = new System.Drawing.Point(30, 340);
             this.lblNetPay.Name = "lblNetPay";
             this.lblNetPay.Size = new System.Drawing.Size(75, 17);
             this.lblNetPay.TabIndex = 13;
@@ -92,30 +96,50 @@ namespace PayrollSample
             this.lblNetPayValue.AutoSize = true;
             this.lblNetPayValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblNetPayValue.ForeColor = System.Drawing.Color.Green;
-            this.lblNetPayValue.Location = new System.Drawing.Point(200, 318);
+            this.lblNetPayValue.Location = new System.Drawing.Point(200, 338);
             this.lblNetPayValue.Name = "lblNetPayValue";
             this.lblNetPayValue.Size = new System.Drawing.Size(57, 20);
             this.lblNetPayValue.TabIndex = 12;
             this.lblNetPayValue.Text = "$0.00";
             // 
+            // lblLateDeduction
+            // 
+            this.lblLateDeduction.AutoSize = true;
+            this.lblLateDeduction.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblLateDeduction.Location = new System.Drawing.Point(30, 260);
+            this.lblLateDeduction.Name = "lblLateDeduction";
+            this.lblLateDeduction.Size = new System.Drawing.Size(109, 17);
+            this.lblLateDeduction.TabIndex = 11;
+            this.lblLateDeduction.Text = "Late Deduction:";
+            // 
+            // lblLateDeductionValue
+            // 
+            this.lblLateDeductionValue.AutoSize = true;
+            this.lblLateDeductionValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblLateDeductionValue.Location = new System.Drawing.Point(200, 260);
+            this.lblLateDeductionValue.Name = "lblLateDeductionValue";
+            this.lblLateDeductionValue.Size = new System.Drawing.Size(40, 17);
+            this.lblLateDeductionValue.TabIndex = 12;
+            this.lblLateDeductionValue.Text = "$0.00";
+            // 
             // lblTotalDeductions
             // 
             this.lblTotalDeductions.AutoSize = true;
             this.lblTotalDeductions.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblTotalDeductions.Location = new System.Drawing.Point(30, 280);
+            this.lblTotalDeductions.Location = new System.Drawing.Point(30, 300);
             this.lblTotalDeductions.Name = "lblTotalDeductions";
             this.lblTotalDeductions.Size = new System.Drawing.Size(123, 17);
-            this.lblTotalDeductions.TabIndex = 11;
+            this.lblTotalDeductions.TabIndex = 13;
             this.lblTotalDeductions.Text = "Total Deductions:";
             // 
             // lblTotalDeductionsValue
             // 
             this.lblTotalDeductionsValue.AutoSize = true;
             this.lblTotalDeductionsValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblTotalDeductionsValue.Location = new System.Drawing.Point(200, 280);
+            this.lblTotalDeductionsValue.Location = new System.Drawing.Point(200, 300);
             this.lblTotalDeductionsValue.Name = "lblTotalDeductionsValue";
             this.lblTotalDeductionsValue.Size = new System.Drawing.Size(40, 17);
-            this.lblTotalDeductionsValue.TabIndex = 10;
+            this.lblTotalDeductionsValue.TabIndex = 14;
             this.lblTotalDeductionsValue.Text = "$0.00";
             // 
             // lblGrossPay
@@ -286,6 +310,8 @@ namespace PayrollSample
         private System.Windows.Forms.Label lblGrossPayValue;
         private System.Windows.Forms.Label lblTotalDeductions;
         private System.Windows.Forms.Label lblTotalDeductionsValue;
+        private System.Windows.Forms.Label lblLateDeduction;
+        private System.Windows.Forms.Label lblLateDeductionValue;
         private System.Windows.Forms.Label lblNetPay;
         private System.Windows.Forms.Label lblNetPayValue;
         private System.Windows.Forms.Panel panelButtons;

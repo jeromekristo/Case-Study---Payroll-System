@@ -166,6 +166,11 @@ namespace PayrollSample
             LoadAttendance();
         }
 
+        private void btnClose_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
         private void btnDelete_Click(object sender, EventArgs e)
         {
             if (dgvAttendance.SelectedRows.Count == 0)
@@ -246,11 +251,7 @@ namespace PayrollSample
                 using (var cmd = new SqlCommand(
                     @"UPDATE Attendance
                       SET time_in = @time_in,
-                          time_out = @time_out,
-                          hours_worked = CASE
-                              WHEN @time_in IS NULL OR @time_out IS NULL THEN 0
-                              ELSE DATEDIFF(MINUTE, @time_in, @time_out) / 60.0
-                          END
+                          time_out = @time_out
                       WHERE attendance_id = @id;", conn))
                 {
                     var timeInParam = cmd.Parameters.Add("@time_in", SqlDbType.Time);

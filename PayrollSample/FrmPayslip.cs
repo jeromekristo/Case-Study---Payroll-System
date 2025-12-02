@@ -42,6 +42,9 @@ namespace PayrollSample
                         return;
                     }
 
+                    // Debug: Show all column names found
+                    System.Diagnostics.Debug.WriteLine($"Columns found in {tableName}: {string.Join(", ", columnNames.Keys)}");
+
                     DetectPayrollColumns(columnNames,
                         out string userIdCol,
                         out string periodStartCol,
@@ -49,7 +52,8 @@ namespace PayrollSample
                         out string totalHoursCol,
                         out string grossPayCol,
                         out string deductionsCol,
-                        out string netPayCol);
+                        out string netPayCol,
+                        out string lateDeductionCol);
 
                     if (!HasEssentialColumns(userIdCol, periodStartCol, periodEndCol) &&
                         tableName.Equals("Payslips", StringComparison.OrdinalIgnoreCase))
@@ -71,7 +75,8 @@ namespace PayrollSample
                                     out totalHoursCol,
                                     out grossPayCol,
                                     out deductionsCol,
-                                    out netPayCol);
+                                    out netPayCol,
+                                    out lateDeductionCol);
                             }
                         }
                     }
@@ -90,7 +95,7 @@ namespace PayrollSample
                     if ((userIdCol == null || periodStartCol == null || periodEndCol == null) &&
                         TryUsePayrollJoin(conn, tableName, columnNames, ref tableAlias, ref fromClause,
                             ref userIdCol, ref periodStartCol, ref periodEndCol,
-                            ref totalHoursCol, ref grossPayCol, ref deductionsCol, ref netPayCol))
+                            ref totalHoursCol, ref grossPayCol, ref deductionsCol, ref netPayCol, ref lateDeductionCol))
                     {
                         // Columns filled via payroll join
                     }
@@ -106,23 +111,56 @@ namespace PayrollSample
                     var selectColumns = new System.Collections.Generic.List<string>();
                     var orderByColumns = new System.Collections.Generic.List<string>();
 
-                    if (totalHoursCol != null) selectColumns.Add($"{tableAlias}.[{totalHoursCol}] AS TotalHours");
-                    if (grossPayCol != null) selectColumns.Add($"{tableAlias}.[{grossPayCol}] AS GrossPay");
-                    if (deductionsCol != null) selectColumns.Add($"{tableAlias}.[{deductionsCol}] AS Deductions");
-                    if (netPayCol != null) selectColumns.Add($"{tableAlias}.[{netPayCol}] AS NetPay");
-                    if (periodStartCol != null)
+                    // Determine actual column names to use (prefer detected, fallback to standard names)
+                    string actualTotalHoursCol = totalHoursCol ?? (columnNames.ContainsKey("TotalHours") ? "TotalHours" : null);
+                    string actualGrossPayCol = grossPayCol ?? (columnNames.ContainsKey("GrossPay") ? "GrossPay" : null);
+                    string actualDeductionsCol = deductionsCol ?? (columnNames.ContainsKey("Deductions") ? "Deductions" : null);
+                    string actualNetPayCol = netPayCol ?? (columnNames.ContainsKey("NetPay") ? "NetPay" : null);
+                    string actualPeriodStartCol = periodStartCol ?? (columnNames.ContainsKey("PeriodFrom") ? "PeriodFrom" : null);
+                    string actualPeriodEndCol = periodEndCol ?? (columnNames.ContainsKey("PeriodTo") ? "PeriodTo" : null);
+                    string actualLateDeductionCol = lateDeductionCol ??
+                        (columnNames.ContainsKey("LateDeduction") ? "LateDeduction" :
+                        (columnNames.ContainsKey("late_deduction") ? "late_deduction" : null));
+
+                    // Use ISNULL to handle NULL values and display 0 instead
+                    if (actualTotalHoursCol != null) 
+                        selectColumns.Add($"ISNULL({tableAlias}.[{actualTotalHoursCol}], 0) AS TotalHours");
+                    else
+                        selectColumns.Add("0 AS TotalHours");
+                    
+                    if (actualGrossPayCol != null) 
+                        selectColumns.Add($"ISNULL({tableAlias}.[{actualGrossPayCol}], 0) AS GrossPay");
+                    else
+                        selectColumns.Add("0 AS GrossPay");
+                    
+                    if (actualLateDeductionCol != null)
+                        selectColumns.Add($"ISNULL({tableAlias}.[{actualLateDeductionCol}], 0) AS LateDeduction");
+                    else
+                        selectColumns.Add("0 AS LateDeduction");
+                    
+                    if (actualDeductionsCol != null) 
+                        selectColumns.Add($"ISNULL({tableAlias}.[{actualDeductionsCol}], 0) AS Deductions");
+                    else
+                        selectColumns.Add("0 AS Deductions");
+                    
+                    if (actualNetPayCol != null) 
+                        selectColumns.Add($"ISNULL({tableAlias}.[{actualNetPayCol}], 0) AS NetPay");
+                    else
+                        selectColumns.Add("0 AS NetPay");
+                    
+                    if (actualPeriodStartCol != null)
                     {
-                        selectColumns.Add($"{tableAlias}.[{periodStartCol}] AS PeriodStart");
-                        orderByColumns.Add($"{tableAlias}.[{periodStartCol}]");
+                        selectColumns.Add($"{tableAlias}.[{actualPeriodStartCol}] AS PeriodStart");
+                        orderByColumns.Add($"{tableAlias}.[{actualPeriodStartCol}]");
                     }
-                    if (periodEndCol != null)
+                    if (actualPeriodEndCol != null)
                     {
-                        selectColumns.Add($"{tableAlias}.[{periodEndCol}] AS PeriodEnd");
-                        orderByColumns.Insert(0, $"{tableAlias}.[{periodEndCol}]");
+                        selectColumns.Add($"{tableAlias}.[{actualPeriodEndCol}] AS PeriodEnd");
+                        orderByColumns.Insert(0, $"{tableAlias}.[{actualPeriodEndCol}]");
                     }
 
                     selectColumns.Add("u.FirstName + ' ' + u.LastName AS EmployeeName");
-                    selectColumns.Add("u.salary_rate AS HourlyRate");
+                    selectColumns.Add("ISNULL(u.salary_rate, 0) AS HourlyRate");
 
                     if (selectColumns.Count == 0)
                     {
@@ -131,14 +169,151 @@ namespace PayrollSample
                         return;
                     }
 
-                    string orderByClause = orderByColumns.Count > 0 ? "ORDER BY " + string.Join(" DESC, ", orderByColumns) + " DESC" : "";
+                    // Build order by clause - get the most recent payslip by period dates
+                    // Order by period end date first (most recent period), then period start date
+                    var orderByParts = new System.Collections.Generic.List<string>();
+                    
+                    // Primary: Order by period end date (most recent cutoff period first)
+                    if (actualPeriodEndCol != null)
+                    {
+                        orderByParts.Add($"{tableAlias}.[{actualPeriodEndCol}] DESC");
+                    }
+                    else if (periodEndCol != null)
+                    {
+                        orderByParts.Add($"{tableAlias}.[{periodEndCol}] DESC");
+                    }
+                    
+                    // Secondary: Order by period start date
+                    if (actualPeriodStartCol != null)
+                    {
+                        orderByParts.Add($"{tableAlias}.[{actualPeriodStartCol}] DESC");
+                    }
+                    else if (periodStartCol != null)
+                    {
+                        orderByParts.Add($"{tableAlias}.[{periodStartCol}] DESC");
+                    }
+                    
+                    // Tertiary: Order by GeneratedDate if available (most recently generated first)
+                    string dateCol = FindColumnName(columnNames, 
+                        new[] { "GeneratedDate", "generated_date", "CreatedDate", "created_date", "DateGenerated", "date_generated" },
+                        null);
+                    if (dateCol != null)
+                    {
+                        orderByParts.Add($"{tableAlias}.[{dateCol}] DESC");
+                    }
+                    
+                    string orderByClause = orderByParts.Count > 0 ? "ORDER BY " + string.Join(", ", orderByParts) : "";
+
+                    // Check if Status column exists and add it to WHERE clause if available
+                    string statusCol = FindColumnName(columnNames, 
+                        new[] { "Status", "status" },
+                        null);
+                    string statusFilter = "";
+                    if (statusCol != null)
+                    {
+                        // Prefer records with Status = 'Generated', but don't exclude others
+                        statusFilter = $" AND ({tableAlias}.[{statusCol}] = 'Generated' OR {tableAlias}.[{statusCol}] IS NULL)";
+                    }
 
                     var query = $@"SELECT TOP 1 
                                         {string.Join(",\n                                        ", selectColumns)}
                                   {fromClause}
                                   INNER JOIN Users u ON {tableAlias}.[{userIdCol}] = u.UserID
-                                  WHERE {tableAlias}.[{userIdCol}] = @UserID
+                                  WHERE {tableAlias}.[{userIdCol}] = @UserID{statusFilter}
                                   {orderByClause}";
+
+                    // Debug: Log the query and column detection results
+                    System.Diagnostics.Debug.WriteLine($"Payslip Query: {query}");
+                    System.Diagnostics.Debug.WriteLine($"UserID: {userId}");
+                    System.Diagnostics.Debug.WriteLine($"Table: {tableName}");
+                    System.Diagnostics.Debug.WriteLine($"TotalHours Column: {actualTotalHoursCol ?? "NOT FOUND"}");
+                    System.Diagnostics.Debug.WriteLine($"GrossPay Column: {actualGrossPayCol ?? "NOT FOUND"}");
+                    System.Diagnostics.Debug.WriteLine($"Deductions Column: {actualDeductionsCol ?? "NOT FOUND"}");
+                    System.Diagnostics.Debug.WriteLine($"LateDeduction Column: {actualLateDeductionCol ?? "NOT FOUND"}");
+                    System.Diagnostics.Debug.WriteLine($"NetPay Column: {actualNetPayCol ?? "NOT FOUND"}");
+                    System.Diagnostics.Debug.WriteLine($"PeriodFrom Column: {actualPeriodStartCol ?? "NOT FOUND"}");
+                    System.Diagnostics.Debug.WriteLine($"PeriodTo Column: {actualPeriodEndCol ?? "NOT FOUND"}");
+
+                    // First, let's verify the raw data exists with a simple query (without ISNULL to see actual values)
+                    var verifyQuery = $@"SELECT TOP 5 
+                                        {tableAlias}.[{userIdCol}] AS UserID,
+                                        {tableAlias}.[{actualPeriodStartCol ?? periodStartCol}] AS PeriodFrom,
+                                        {tableAlias}.[{actualPeriodEndCol ?? periodEndCol}] AS PeriodTo";
+                    
+                    if (actualTotalHoursCol != null) verifyQuery += $", {tableAlias}.[{actualTotalHoursCol}] AS TotalHours";
+                    else if (totalHoursCol != null) verifyQuery += $", {tableAlias}.[{totalHoursCol}] AS TotalHours";
+                    
+                    if (actualGrossPayCol != null) verifyQuery += $", {tableAlias}.[{actualGrossPayCol}] AS GrossPay";
+                    else if (grossPayCol != null) verifyQuery += $", {tableAlias}.[{grossPayCol}] AS GrossPay";
+                    
+                    if (actualDeductionsCol != null) verifyQuery += $", {tableAlias}.[{actualDeductionsCol}] AS Deductions";
+                    else if (deductionsCol != null) verifyQuery += $", {tableAlias}.[{deductionsCol}] AS Deductions";
+                    
+                    if (actualLateDeductionCol != null) verifyQuery += $", {tableAlias}.[{actualLateDeductionCol}] AS LateDeduction";
+                    else if (lateDeductionCol != null) verifyQuery += $", {tableAlias}.[{lateDeductionCol}] AS LateDeduction";
+                    
+                    if (actualNetPayCol != null) verifyQuery += $", {tableAlias}.[{actualNetPayCol}] AS NetPay";
+                    else if (netPayCol != null) verifyQuery += $", {tableAlias}.[{netPayCol}] AS NetPay";
+                    
+                    verifyQuery += $@"
+                                        FROM [{tableName}] {tableAlias}
+                                        WHERE {tableAlias}.[{userIdCol}] = @UserID
+                                        ORDER BY {tableAlias}.[{actualPeriodEndCol ?? periodEndCol}] DESC, {tableAlias}.[{actualPeriodStartCol ?? periodStartCol}] DESC";
+                    
+                    System.Diagnostics.Debug.WriteLine($"Verify Query (Raw Values): {verifyQuery}");
+                    
+                    // Execute verify query to see what's actually in the database
+                    try
+                    {
+                        using (var verifyCmd = new SqlCommand(verifyQuery, conn))
+                        {
+                            verifyCmd.Parameters.AddWithValue("@UserID", userId);
+                            using (var verifyReader = verifyCmd.ExecuteReader())
+                            {
+                                int recordCount = 0;
+                                while (verifyReader.Read() && recordCount < 3)
+                                {
+                                    recordCount++;
+                                    System.Diagnostics.Debug.WriteLine($"Record {recordCount}:");
+                                    try
+                                    {
+                                        System.Diagnostics.Debug.WriteLine($"  PeriodFrom: {verifyReader["PeriodFrom"]}");
+                                        System.Diagnostics.Debug.WriteLine($"  PeriodTo: {verifyReader["PeriodTo"]}");
+                                        
+                                        var schemaTable = verifyReader.GetSchemaTable();
+                                        if (schemaTable != null)
+                                        {
+                                            var availableColumns = new System.Collections.Generic.List<string>();
+                                            foreach (System.Data.DataRow row in schemaTable.Rows)
+                                            {
+                                                availableColumns.Add(row["ColumnName"].ToString());
+                                            }
+                                            System.Diagnostics.Debug.WriteLine($"  Available columns: {string.Join(", ", availableColumns)}");
+                                            
+                                            if (availableColumns.Contains("TotalHours"))
+                                                System.Diagnostics.Debug.WriteLine($"  TotalHours (raw): {verifyReader["TotalHours"]} (IsDBNull: {verifyReader.IsDBNull(verifyReader.GetOrdinal("TotalHours"))})");
+                                            if (availableColumns.Contains("GrossPay"))
+                                                System.Diagnostics.Debug.WriteLine($"  GrossPay (raw): {verifyReader["GrossPay"]} (IsDBNull: {verifyReader.IsDBNull(verifyReader.GetOrdinal("GrossPay"))})");
+                                            if (availableColumns.Contains("Deductions"))
+                                                System.Diagnostics.Debug.WriteLine($"  Deductions (raw): {verifyReader["Deductions"]} (IsDBNull: {verifyReader.IsDBNull(verifyReader.GetOrdinal("Deductions"))})");
+                                        if (availableColumns.Contains("LateDeduction"))
+                                            System.Diagnostics.Debug.WriteLine($"  LateDeduction (raw): {verifyReader["LateDeduction"]} (IsDBNull: {verifyReader.IsDBNull(verifyReader.GetOrdinal("LateDeduction"))})");
+                                            if (availableColumns.Contains("NetPay"))
+                                                System.Diagnostics.Debug.WriteLine($"  NetPay (raw): {verifyReader["NetPay"]} (IsDBNull: {verifyReader.IsDBNull(verifyReader.GetOrdinal("NetPay"))})");
+                                        }
+                                    }
+                                    catch (Exception colEx)
+                                    {
+                                        System.Diagnostics.Debug.WriteLine($"  Error reading record: {colEx.Message}");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception verifyEx)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Verify query error: {verifyEx.Message}");
+                    }
 
                     using (var cmd = new SqlCommand(query, conn))
                     {
@@ -148,6 +323,22 @@ namespace PayrollSample
                         {
                             if (reader.Read())
                             {
+                                // Debug: Log the actual values retrieved
+                                try
+                                {
+                                    System.Diagnostics.Debug.WriteLine($"Retrieved Values:");
+                                    System.Diagnostics.Debug.WriteLine($"  TotalHours: {reader["TotalHours"]}");
+                                    System.Diagnostics.Debug.WriteLine($"  GrossPay: {reader["GrossPay"]}");
+                                    System.Diagnostics.Debug.WriteLine($"  Deductions: {reader["Deductions"]}");
+                                    System.Diagnostics.Debug.WriteLine($"  NetPay: {reader["NetPay"]}");
+                                    System.Diagnostics.Debug.WriteLine($"  PeriodStart: {reader["PeriodStart"]}");
+                                    System.Diagnostics.Debug.WriteLine($"  PeriodEnd: {reader["PeriodEnd"]}");
+                                }
+                                catch (Exception debugEx)
+                                {
+                                    System.Diagnostics.Debug.WriteLine($"Debug logging error: {debugEx.Message}");
+                                }
+
                                 // Display employee name
                                 if (reader["EmployeeName"] != DBNull.Value)
                                     lblEmployeeNameValue.Text = reader["EmployeeName"].ToString();
@@ -167,59 +358,72 @@ namespace PayrollSample
                                     lblPayrollPeriodValue.Text = "N/A";
                                 }
 
-                                // Display total hours worked
-                                if (totalHoursCol != null && reader["TotalHours"] != DBNull.Value)
+                                // Display total hours worked (always display, even if 0)
+                                try
                                 {
-                                    decimal totalHours = Convert.ToDecimal(reader["TotalHours"]);
+                                    decimal totalHours = reader["TotalHours"] != DBNull.Value ? Convert.ToDecimal(reader["TotalHours"]) : 0m;
                                     lblTotalHoursValue.Text = totalHours.ToString("N2") + " hours";
                                 }
-                                else
+                                catch
                                 {
-                                    lblTotalHoursValue.Text = "N/A";
+                                    lblTotalHoursValue.Text = "0.00 hours";
                                 }
 
                                 // Display hourly rate
-                                if (reader["HourlyRate"] != DBNull.Value)
+                                const string pesoFormat = "₱#,0.00";
+
+                                try
                                 {
-                                    decimal hourlyRate = Convert.ToDecimal(reader["HourlyRate"]);
-                                    lblHourlyRateValue.Text = hourlyRate.ToString("C2");
+                                    decimal hourlyRate = reader["HourlyRate"] != DBNull.Value ? Convert.ToDecimal(reader["HourlyRate"]) : 0m;
+                                    lblHourlyRateValue.Text = hourlyRate.ToString(pesoFormat);
                                 }
-                                else
+                                catch
                                 {
-                                    lblHourlyRateValue.Text = "N/A";
+                                    lblHourlyRateValue.Text = "₱0.00";
                                 }
 
-                                // Display gross pay
-                                if (grossPayCol != null && reader["GrossPay"] != DBNull.Value)
+                                // Display gross pay (always display, even if 0)
+                                try
                                 {
-                                    decimal grossPay = Convert.ToDecimal(reader["GrossPay"]);
-                                    lblGrossPayValue.Text = grossPay.ToString("C2");
+                                    decimal grossPay = reader["GrossPay"] != DBNull.Value ? Convert.ToDecimal(reader["GrossPay"]) : 0m;
+                                    lblGrossPayValue.Text = grossPay.ToString(pesoFormat);
                                 }
-                                else
+                                catch
                                 {
-                                    lblGrossPayValue.Text = "N/A";
-                                }
-
-                                // Display total deductions (only if column exists)
-                                if (deductionsCol != null && reader["Deductions"] != DBNull.Value)
-                                {
-                                    decimal deductions = Convert.ToDecimal(reader["Deductions"]);
-                                    lblTotalDeductionsValue.Text = deductions.ToString("C2");
-                                }
-                                else
-                                {
-                                    lblTotalDeductionsValue.Text = "$0.00"; // Default to 0 if column doesn't exist
+                                    lblGrossPayValue.Text = "₱0.00";
                                 }
 
-                                // Display net pay
-                                if (netPayCol != null && reader["NetPay"] != DBNull.Value)
+                                // Display total deductions (always display, even if 0)
+                                try
                                 {
-                                    decimal netPay = Convert.ToDecimal(reader["NetPay"]);
-                                    lblNetPayValue.Text = netPay.ToString("C2");
+                                    decimal deductions = reader["Deductions"] != DBNull.Value ? Convert.ToDecimal(reader["Deductions"]) : 0m;
+                                    lblTotalDeductionsValue.Text = deductions.ToString(pesoFormat);
                                 }
-                                else
+                                catch
                                 {
-                                    lblNetPayValue.Text = "N/A";
+                                    lblTotalDeductionsValue.Text = "₱0.00";
+                                }
+
+                                // Display late deduction separately
+                                try
+                                {
+                                    decimal lateDeduction = reader["LateDeduction"] != DBNull.Value ? Convert.ToDecimal(reader["LateDeduction"]) : 0m;
+                                    lblLateDeductionValue.Text = lateDeduction.ToString(pesoFormat);
+                                }
+                                catch
+                                {
+                                    lblLateDeductionValue.Text = "₱0.00";
+                                }
+
+                                // Display net pay (always display, even if 0)
+                                try
+                                {
+                                    decimal netPay = reader["NetPay"] != DBNull.Value ? Convert.ToDecimal(reader["NetPay"]) : 0m;
+                                    lblNetPayValue.Text = netPay.ToString(pesoFormat);
+                                }
+                                catch
+                                {
+                                    lblNetPayValue.Text = "₱0.00";
                                 }
 
                                 // Enable download button
@@ -298,7 +502,8 @@ namespace PayrollSample
             out string totalHoursCol,
             out string grossPayCol,
             out string deductionsCol,
-            out string netPayCol)
+            out string netPayCol,
+            out string lateDeductionCol)
         {
             userIdCol = FindColumnName(
                 columnNames,
@@ -315,25 +520,31 @@ namespace PayrollSample
                 new[] { "period_end", "PeriodTo", "period_to", "ToDate", "to_date", "EndDate", "end_date", "DateTo", "dateto", "PayrollEnd", "PayrollEndDate", "CutOffEnd", "CutoffEnd", "cutoff_to" },
                 new[] { new[] { "period", "to" }, new[] { "end", "date" }, new[] { "cutoff", "end" }, new[] { "cut", "off", "end" } });
 
+            // Check for exact matches first (case-insensitive), then try variations
             totalHoursCol = FindColumnName(
                 columnNames,
-                new[] { "total_hours", "TotalHours", "total_hours", "Hours", "hours", "TotalHoursWorked", "total_hours_worked" },
+                new[] { "TotalHours", "total_hours", "TotalHoursWorked", "total_hours_worked", "Hours", "hours" },
                 new[] { new[] { "total", "hours" }, new[] { "hours", "worked" } });
 
             grossPayCol = FindColumnName(
                 columnNames,
-                new[] { "gross_pay", "GrossPay", "gross_pay", "Gross", "gross", "GrossAmount", "gross_amount" },
+                new[] { "GrossPay", "gross_pay", "GrossAmount", "gross_amount", "Gross", "gross" },
                 new[] { new[] { "gross" } });
 
             deductionsCol = FindColumnName(
                 columnNames,
-                new[] { "deductions", "Deductions", "deduction", "Deduction", "TotalDeductions", "total_deductions" },
+                new[] { "Deductions", "deductions", "TotalDeductions", "total_deductions", "Deduction", "deduction" },
                 new[] { new[] { "deduction" } });
 
             netPayCol = FindColumnName(
                 columnNames,
-                new[] { "net_pay", "NetPay", "net_pay", "Net", "net", "NetAmount", "net_amount" },
+                new[] { "NetPay", "net_pay", "NetAmount", "net_amount", "Net", "net" },
                 new[] { new[] { "net" } });
+
+            lateDeductionCol = FindColumnName(
+                columnNames,
+                new[] { "LateDeduction", "late_deduction", "LatePenalty", "late_penalty" },
+                new[] { new[] { "late", "deduction" }, new[] { "late", "penalty" } });
         }
 
         private string FindColumnName(
@@ -413,7 +624,8 @@ namespace PayrollSample
             ref string totalHoursCol,
             ref string grossPayCol,
             ref string deductionsCol,
-            ref string netPayCol)
+            ref string netPayCol,
+            ref string lateDeductionCol)
         {
             if (!baseTableName.Equals("Payslips", StringComparison.OrdinalIgnoreCase))
             {
@@ -492,11 +704,16 @@ namespace PayrollSample
                 payrollColumns,
                 new[] { "net_pay", "NetPay", "net_pay", "Net", "net", "NetAmount", "net_amount" },
                 new[] { new[] { "net" } });
+            string payrollLateDeductionCol = FindColumnName(
+                payrollColumns,
+                new[] { "late_deduction", "LateDeduction", "LatePenalty", "late_penalty" },
+                new[] { new[] { "late", "deduction" }, new[] { "late", "penalty" } });
 
             if (totalHoursCol == null) totalHoursCol = payrollTotalHoursCol;
             if (grossPayCol == null) grossPayCol = payrollGrossCol;
             if (deductionsCol == null) deductionsCol = payrollDeductionCol;
             if (netPayCol == null) netPayCol = payrollNetCol;
+            if (lateDeductionCol == null) lateDeductionCol = payrollLateDeductionCol;
 
             tableAlias = "pr";
             fromClause = $"FROM [{baseTableName}] ps INNER JOIN [{payrollTable}] {tableAlias} ON ps.[{payrollLinkCol}] = {tableAlias}.[{payrollPrimaryCol}]";
@@ -530,6 +747,7 @@ namespace PayrollSample
             lblHourlyRateValue.Text = "N/A";
             lblGrossPayValue.Text = "N/A";
             lblTotalDeductionsValue.Text = "N/A";
+            lblLateDeductionValue.Text = "N/A";
             lblNetPayValue.Text = "N/A";
             btnDownloadPayslip.Enabled = false;
 

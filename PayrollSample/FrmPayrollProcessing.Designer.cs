@@ -46,59 +46,59 @@ namespace PayrollSample
             // 
             // dtpFrom
             // 
-            this.dtpFrom.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.dtpFrom.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.dtpFrom.Format = System.Windows.Forms.DateTimePickerFormat.Short;
-            this.dtpFrom.Location = new System.Drawing.Point(80, 15);
+            this.dtpFrom.Location = new System.Drawing.Point(71, 15);
             this.dtpFrom.Name = "dtpFrom";
-            this.dtpFrom.Size = new System.Drawing.Size(150, 21);
+            this.dtpFrom.Size = new System.Drawing.Size(180, 26);
             this.dtpFrom.TabIndex = 0;
             // 
             // dtpTo
             // 
-            this.dtpTo.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.dtpTo.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.dtpTo.Format = System.Windows.Forms.DateTimePickerFormat.Short;
-            this.dtpTo.Location = new System.Drawing.Point(300, 15);
+            this.dtpTo.Location = new System.Drawing.Point(309, 15);
             this.dtpTo.Name = "dtpTo";
-            this.dtpTo.Size = new System.Drawing.Size(150, 21);
+            this.dtpTo.Size = new System.Drawing.Size(180, 26);
             this.dtpTo.TabIndex = 1;
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label1.Location = new System.Drawing.Point(15, 18);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(38, 15);
+            this.label1.Size = new System.Drawing.Size(50, 20);
             this.label1.TabIndex = 2;
             this.label1.Text = "From:";
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(250, 18);
+            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label2.Location = new System.Drawing.Point(270, 18);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(26, 15);
+            this.label2.Size = new System.Drawing.Size(33, 20);
             this.label2.TabIndex = 3;
             this.label2.Text = "To:";
             // 
             // lblCutoffInfo
             // 
             this.lblCutoffInfo.AutoSize = true;
-            this.lblCutoffInfo.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblCutoffInfo.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblCutoffInfo.ForeColor = System.Drawing.Color.DarkBlue;
-            this.lblCutoffInfo.Location = new System.Drawing.Point(480, 18);
+            this.lblCutoffInfo.Location = new System.Drawing.Point(510, 18);
             this.lblCutoffInfo.Name = "lblCutoffInfo";
-            this.lblCutoffInfo.Size = new System.Drawing.Size(200, 13);
+            this.lblCutoffInfo.Size = new System.Drawing.Size(250, 18);
             this.lblCutoffInfo.TabIndex = 4;
             this.lblCutoffInfo.Text = "Cutoff Period: 1-15 or 16-End of Month";
             // 
             // btnLoadAttendance
             // 
-            this.btnLoadAttendance.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnLoadAttendance.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnLoadAttendance.Location = new System.Drawing.Point(15, 10);
             this.btnLoadAttendance.Name = "btnLoadAttendance";
-            this.btnLoadAttendance.Size = new System.Drawing.Size(150, 35);
+            this.btnLoadAttendance.Size = new System.Drawing.Size(180, 40);
             this.btnLoadAttendance.TabIndex = 4;
             this.btnLoadAttendance.Text = "Load Attendance";
             this.btnLoadAttendance.UseVisualStyleBackColor = true;
@@ -106,10 +106,10 @@ namespace PayrollSample
             // 
             // btnGeneratePayroll
             // 
-            this.btnGeneratePayroll.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnGeneratePayroll.Location = new System.Drawing.Point(180, 10);
+            this.btnGeneratePayroll.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnGeneratePayroll.Location = new System.Drawing.Point(201, 10);
             this.btnGeneratePayroll.Name = "btnGeneratePayroll";
-            this.btnGeneratePayroll.Size = new System.Drawing.Size(150, 35);
+            this.btnGeneratePayroll.Size = new System.Drawing.Size(180, 40);
             this.btnGeneratePayroll.TabIndex = 5;
             this.btnGeneratePayroll.Text = "Generate Payroll";
             this.btnGeneratePayroll.UseVisualStyleBackColor = true;
@@ -117,10 +117,11 @@ namespace PayrollSample
             // 
             // btnClose
             // 
-            this.btnClose.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnClose.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnClose.Location = new System.Drawing.Point(850, 10);
             this.btnClose.Name = "btnClose";
-            this.btnClose.Size = new System.Drawing.Size(100, 35);
+            this.btnClose.Size = new System.Drawing.Size(120, 40);
             this.btnClose.TabIndex = 6;
             this.btnClose.Text = "Close";
             this.btnClose.UseVisualStyleBackColor = true;
@@ -136,10 +137,12 @@ namespace PayrollSample
             this.dataGridViewPayroll.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dataGridViewPayroll.BackgroundColor = System.Drawing.Color.White;
             this.dataGridViewPayroll.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridViewPayroll.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.dataGridViewPayroll.Location = new System.Drawing.Point(12, 120);
             this.dataGridViewPayroll.MultiSelect = false;
             this.dataGridViewPayroll.Name = "dataGridViewPayroll";
             this.dataGridViewPayroll.ReadOnly = true;
+            this.dataGridViewPayroll.RowTemplate.Height = 30;
             this.dataGridViewPayroll.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dataGridViewPayroll.Size = new System.Drawing.Size(960, 400);
             this.dataGridViewPayroll.TabIndex = 6;
@@ -174,12 +177,13 @@ namespace PayrollSample
             this.Controls.Add(this.panelButtons);
             this.Controls.Add(this.panelDateRange);
             this.Controls.Add(this.dataGridViewPayroll);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
+            this.MaximizeBox = true;
+            this.MinimizeBox = true;
             this.Name = "FrmPayrollProcessing";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Payroll Processing";
+            this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.ResumeLayout(false);
 
         }

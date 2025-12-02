@@ -33,6 +33,7 @@ namespace PayrollSample
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
             this.panelFilters = new System.Windows.Forms.Panel();
+            this.btnClose = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnSave = new System.Windows.Forms.Button();
             this.btnDelete = new System.Windows.Forms.Button();
@@ -59,6 +60,7 @@ namespace PayrollSample
             // 
             // panelFilters
             // 
+            this.panelFilters.Controls.Add(this.btnClose);
             this.panelFilters.Controls.Add(this.btnCancel);
             this.panelFilters.Controls.Add(this.btnSave);
             this.panelFilters.Controls.Add(this.btnDelete);
@@ -77,12 +79,24 @@ namespace PayrollSample
             this.panelFilters.Size = new System.Drawing.Size(984, 110);
             this.panelFilters.TabIndex = 0;
             // 
+            // btnClose
+            // 
+            this.btnClose.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnClose.Location = new System.Drawing.Point(741, 63);
+            this.btnClose.Name = "btnClose";
+            this.btnClose.Size = new System.Drawing.Size(120, 35);
+            this.btnClose.TabIndex = 11;
+            this.btnClose.Text = "Close";
+            this.btnClose.UseVisualStyleBackColor = true;
+            this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
+            // 
             // btnCancel
             // 
             this.btnCancel.Enabled = false;
-            this.btnCancel.Location = new System.Drawing.Point(495, 63);
+            this.btnCancel.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnCancel.Location = new System.Drawing.Point(615, 63);
             this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Size = new System.Drawing.Size(90, 30);
+            this.btnCancel.Size = new System.Drawing.Size(120, 35);
             this.btnCancel.TabIndex = 10;
             this.btnCancel.Text = "Cancel";
             this.btnCancel.UseVisualStyleBackColor = true;
@@ -91,9 +105,10 @@ namespace PayrollSample
             // btnSave
             // 
             this.btnSave.Enabled = false;
-            this.btnSave.Location = new System.Drawing.Point(399, 63);
+            this.btnSave.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnSave.Location = new System.Drawing.Point(489, 63);
             this.btnSave.Name = "btnSave";
-            this.btnSave.Size = new System.Drawing.Size(90, 30);
+            this.btnSave.Size = new System.Drawing.Size(120, 35);
             this.btnSave.TabIndex = 9;
             this.btnSave.Text = "Save";
             this.btnSave.UseVisualStyleBackColor = true;
@@ -102,9 +117,10 @@ namespace PayrollSample
             // btnDelete
             // 
             this.btnDelete.Enabled = false;
-            this.btnDelete.Location = new System.Drawing.Point(303, 63);
+            this.btnDelete.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnDelete.Location = new System.Drawing.Point(363, 63);
             this.btnDelete.Name = "btnDelete";
-            this.btnDelete.Size = new System.Drawing.Size(90, 30);
+            this.btnDelete.Size = new System.Drawing.Size(120, 35);
             this.btnDelete.TabIndex = 8;
             this.btnDelete.Text = "Delete";
             this.btnDelete.UseVisualStyleBackColor = true;
@@ -113,9 +129,10 @@ namespace PayrollSample
             // btnEdit
             // 
             this.btnEdit.Enabled = false;
-            this.btnEdit.Location = new System.Drawing.Point(207, 63);
+            this.btnEdit.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnEdit.Location = new System.Drawing.Point(237, 63);
             this.btnEdit.Name = "btnEdit";
-            this.btnEdit.Size = new System.Drawing.Size(90, 30);
+            this.btnEdit.Size = new System.Drawing.Size(120, 35);
             this.btnEdit.TabIndex = 7;
             this.btnEdit.Text = "Edit";
             this.btnEdit.UseVisualStyleBackColor = true;
@@ -123,9 +140,10 @@ namespace PayrollSample
             // 
             // btnLoad
             // 
+            this.btnLoad.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnLoad.Location = new System.Drawing.Point(111, 63);
             this.btnLoad.Name = "btnLoad";
-            this.btnLoad.Size = new System.Drawing.Size(90, 30);
+            this.btnLoad.Size = new System.Drawing.Size(120, 35);
             this.btnLoad.TabIndex = 6;
             this.btnLoad.Text = "Load";
             this.btnLoad.UseVisualStyleBackColor = true;
@@ -133,53 +151,59 @@ namespace PayrollSample
             // 
             // dtTo
             // 
+            this.dtTo.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.dtTo.Format = System.Windows.Forms.DateTimePickerFormat.Short;
-            this.dtTo.Location = new System.Drawing.Point(595, 24);
+            this.dtTo.Location = new System.Drawing.Point(602, 24);
             this.dtTo.Name = "dtTo";
-            this.dtTo.Size = new System.Drawing.Size(120, 20);
+            this.dtTo.Size = new System.Drawing.Size(140, 24);
             this.dtTo.TabIndex = 5;
             // 
             // lblTo
             // 
             this.lblTo.AutoSize = true;
+            this.lblTo.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblTo.Location = new System.Drawing.Point(566, 28);
             this.lblTo.Name = "lblTo";
-            this.lblTo.Size = new System.Drawing.Size(23, 13);
+            this.lblTo.Size = new System.Drawing.Size(30, 18);
             this.lblTo.TabIndex = 4;
             this.lblTo.Text = "To:";
             // 
             // dtFrom
             // 
+            this.dtFrom.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.dtFrom.Format = System.Windows.Forms.DateTimePickerFormat.Short;
-            this.dtFrom.Location = new System.Drawing.Point(399, 24);
+            this.dtFrom.Location = new System.Drawing.Point(413, 24);
             this.dtFrom.Name = "dtFrom";
-            this.dtFrom.Size = new System.Drawing.Size(120, 20);
+            this.dtFrom.Size = new System.Drawing.Size(140, 24);
             this.dtFrom.TabIndex = 3;
             // 
             // lblFrom
             // 
             this.lblFrom.AutoSize = true;
+            this.lblFrom.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblFrom.Location = new System.Drawing.Point(360, 28);
             this.lblFrom.Name = "lblFrom";
-            this.lblFrom.Size = new System.Drawing.Size(33, 13);
+            this.lblFrom.Size = new System.Drawing.Size(47, 18);
             this.lblFrom.TabIndex = 2;
             this.lblFrom.Text = "From:";
             // 
             // cmbEmployee
             // 
             this.cmbEmployee.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbEmployee.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.cmbEmployee.FormattingEnabled = true;
-            this.cmbEmployee.Location = new System.Drawing.Point(111, 24);
+            this.cmbEmployee.Location = new System.Drawing.Point(130, 24);
             this.cmbEmployee.Name = "cmbEmployee";
-            this.cmbEmployee.Size = new System.Drawing.Size(210, 21);
+            this.cmbEmployee.Size = new System.Drawing.Size(210, 26);
             this.cmbEmployee.TabIndex = 1;
             // 
             // lblEmployee
             // 
             this.lblEmployee.AutoSize = true;
+            this.lblEmployee.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblEmployee.Location = new System.Drawing.Point(10, 28);
             this.lblEmployee.Name = "lblEmployee";
-            this.lblEmployee.Size = new System.Drawing.Size(95, 13);
+            this.lblEmployee.Size = new System.Drawing.Size(120, 18);
             this.lblEmployee.TabIndex = 0;
             this.lblEmployee.Text = "Select Employee:";
             // 
@@ -200,10 +224,12 @@ namespace PayrollSample
             this.time_out,
             this.hours_worked});
             this.dgvAttendance.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvAttendance.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.dgvAttendance.Location = new System.Drawing.Point(0, 110);
             this.dgvAttendance.MultiSelect = false;
             this.dgvAttendance.Name = "dgvAttendance";
             this.dgvAttendance.ReadOnly = true;
+            this.dgvAttendance.RowTemplate.Height = 30;
             this.dgvAttendance.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dgvAttendance.Size = new System.Drawing.Size(984, 451);
             this.dgvAttendance.TabIndex = 1;
@@ -283,12 +309,13 @@ namespace PayrollSample
             this.ClientSize = new System.Drawing.Size(984, 561);
             this.Controls.Add(this.dgvAttendance);
             this.Controls.Add(this.panelFilters);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
+            this.MaximizeBox = true;
+            this.MinimizeBox = true;
             this.Name = "FrmAttendanceManagement";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Attendance Management";
+            this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.Load += new System.EventHandler(this.FrmAttendanceManagement_Load);
             this.panelFilters.ResumeLayout(false);
             this.panelFilters.PerformLayout();
@@ -300,6 +327,7 @@ namespace PayrollSample
         #endregion
 
         private System.Windows.Forms.Panel panelFilters;
+        private System.Windows.Forms.Button btnClose;
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.Button btnSave;
         private System.Windows.Forms.Button btnDelete;

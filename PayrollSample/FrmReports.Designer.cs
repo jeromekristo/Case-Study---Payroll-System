@@ -69,9 +69,10 @@ namespace PayrollSample
             // 
             // btnClose
             // 
-            this.btnClose.Location = new System.Drawing.Point(766, 72);
+            this.btnClose.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnClose.Location = new System.Drawing.Point(846, 72);
             this.btnClose.Name = "btnClose";
-            this.btnClose.Size = new System.Drawing.Size(120, 30);
+            this.btnClose.Size = new System.Drawing.Size(140, 35);
             this.btnClose.TabIndex = 11;
             this.btnClose.Text = "Close";
             this.btnClose.UseVisualStyleBackColor = true;
@@ -79,9 +80,10 @@ namespace PayrollSample
             // 
             // btnExportExcel
             // 
-            this.btnExportExcel.Location = new System.Drawing.Point(640, 72);
+            this.btnExportExcel.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnExportExcel.Location = new System.Drawing.Point(700, 72);
             this.btnExportExcel.Name = "btnExportExcel";
-            this.btnExportExcel.Size = new System.Drawing.Size(120, 30);
+            this.btnExportExcel.Size = new System.Drawing.Size(140, 35);
             this.btnExportExcel.TabIndex = 10;
             this.btnExportExcel.Text = "Export Excel";
             this.btnExportExcel.UseVisualStyleBackColor = true;
@@ -89,9 +91,10 @@ namespace PayrollSample
             // 
             // btnExportPdf
             // 
-            this.btnExportPdf.Location = new System.Drawing.Point(514, 72);
+            this.btnExportPdf.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnExportPdf.Location = new System.Drawing.Point(554, 72);
             this.btnExportPdf.Name = "btnExportPdf";
-            this.btnExportPdf.Size = new System.Drawing.Size(120, 30);
+            this.btnExportPdf.Size = new System.Drawing.Size(140, 35);
             this.btnExportPdf.TabIndex = 9;
             this.btnExportPdf.Text = "Export PDF";
             this.btnExportPdf.UseVisualStyleBackColor = true;
@@ -99,9 +102,10 @@ namespace PayrollSample
             // 
             // btnGenerate
             // 
-            this.btnGenerate.Location = new System.Drawing.Point(388, 72);
+            this.btnGenerate.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnGenerate.Location = new System.Drawing.Point(408, 72);
             this.btnGenerate.Name = "btnGenerate";
-            this.btnGenerate.Size = new System.Drawing.Size(120, 30);
+            this.btnGenerate.Size = new System.Drawing.Size(140, 35);
             this.btnGenerate.TabIndex = 8;
             this.btnGenerate.Text = "Generate";
             this.btnGenerate.UseVisualStyleBackColor = true;
@@ -110,70 +114,78 @@ namespace PayrollSample
             // cmbEmployee
             // 
             this.cmbEmployee.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbEmployee.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.cmbEmployee.FormattingEnabled = true;
-            this.cmbEmployee.Location = new System.Drawing.Point(120, 75);
+            this.cmbEmployee.Location = new System.Drawing.Point(148, 75);
             this.cmbEmployee.Name = "cmbEmployee";
-            this.cmbEmployee.Size = new System.Drawing.Size(250, 21);
+            this.cmbEmployee.Size = new System.Drawing.Size(250, 26);
             this.cmbEmployee.TabIndex = 7;
             // 
             // lblEmployee
             // 
             this.lblEmployee.AutoSize = true;
+            this.lblEmployee.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblEmployee.Location = new System.Drawing.Point(30, 79);
             this.lblEmployee.Name = "lblEmployee";
-            this.lblEmployee.Size = new System.Drawing.Size(84, 13);
+            this.lblEmployee.Size = new System.Drawing.Size(112, 18);
             this.lblEmployee.TabIndex = 6;
             this.lblEmployee.Text = "Filter Employee:";
             // 
             // dtTo
             // 
+            this.dtTo.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.dtTo.Format = System.Windows.Forms.DateTimePickerFormat.Short;
-            this.dtTo.Location = new System.Drawing.Point(640, 29);
+            this.dtTo.Location = new System.Drawing.Point(647, 29);
             this.dtTo.Name = "dtTo";
-            this.dtTo.Size = new System.Drawing.Size(120, 20);
+            this.dtTo.Size = new System.Drawing.Size(140, 24);
             this.dtTo.TabIndex = 5;
             // 
             // lblTo
             // 
             this.lblTo.AutoSize = true;
+            this.lblTo.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblTo.Location = new System.Drawing.Point(611, 33);
             this.lblTo.Name = "lblTo";
-            this.lblTo.Size = new System.Drawing.Size(23, 13);
+            this.lblTo.Size = new System.Drawing.Size(30, 18);
             this.lblTo.TabIndex = 4;
             this.lblTo.Text = "To:";
             // 
             // dtFrom
             // 
+            this.dtFrom.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.dtFrom.Format = System.Windows.Forms.DateTimePickerFormat.Short;
-            this.dtFrom.Location = new System.Drawing.Point(448, 29);
+            this.dtFrom.Location = new System.Drawing.Point(462, 29);
             this.dtFrom.Name = "dtFrom";
-            this.dtFrom.Size = new System.Drawing.Size(120, 20);
+            this.dtFrom.Size = new System.Drawing.Size(140, 24);
             this.dtFrom.TabIndex = 3;
             // 
             // lblFrom
             // 
             this.lblFrom.AutoSize = true;
+            this.lblFrom.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblFrom.Location = new System.Drawing.Point(409, 33);
             this.lblFrom.Name = "lblFrom";
-            this.lblFrom.Size = new System.Drawing.Size(33, 13);
+            this.lblFrom.Size = new System.Drawing.Size(47, 18);
             this.lblFrom.TabIndex = 2;
             this.lblFrom.Text = "From:";
             // 
             // cmbReportType
             // 
             this.cmbReportType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbReportType.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.cmbReportType.FormattingEnabled = true;
-            this.cmbReportType.Location = new System.Drawing.Point(120, 29);
+            this.cmbReportType.Location = new System.Drawing.Point(131, 29);
             this.cmbReportType.Name = "cmbReportType";
-            this.cmbReportType.Size = new System.Drawing.Size(250, 21);
+            this.cmbReportType.Size = new System.Drawing.Size(250, 26);
             this.cmbReportType.TabIndex = 1;
             // 
             // lblReportType
             // 
             this.lblReportType.AutoSize = true;
+            this.lblReportType.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblReportType.Location = new System.Drawing.Point(30, 33);
             this.lblReportType.Name = "lblReportType";
-            this.lblReportType.Size = new System.Drawing.Size(69, 13);
+            this.lblReportType.Size = new System.Drawing.Size(95, 18);
             this.lblReportType.TabIndex = 0;
             this.lblReportType.Text = "Report Type:";
             // 
@@ -185,10 +197,12 @@ namespace PayrollSample
             this.dgvReports.BackgroundColor = System.Drawing.Color.White;
             this.dgvReports.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvReports.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvReports.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.dgvReports.Location = new System.Drawing.Point(0, 120);
             this.dgvReports.MultiSelect = false;
             this.dgvReports.Name = "dgvReports";
             this.dgvReports.ReadOnly = true;
+            this.dgvReports.RowTemplate.Height = 30;
             this.dgvReports.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dgvReports.Size = new System.Drawing.Size(984, 441);
             this.dgvReports.TabIndex = 1;
@@ -200,12 +214,13 @@ namespace PayrollSample
             this.ClientSize = new System.Drawing.Size(984, 561);
             this.Controls.Add(this.dgvReports);
             this.Controls.Add(this.panelFilters);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
+            this.MaximizeBox = true;
+            this.MinimizeBox = true;
             this.Name = "FrmReports";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Reports";
+            this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.Load += new System.EventHandler(this.FrmReports_Load);
             this.panelFilters.ResumeLayout(false);
             this.panelFilters.PerformLayout();

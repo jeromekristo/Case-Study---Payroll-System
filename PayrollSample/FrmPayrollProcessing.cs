@@ -25,6 +25,7 @@ namespace PayrollSample
             payrollData.Columns.Add("EmployeeName", typeof(string));
             payrollData.Columns.Add("TotalHours", typeof(decimal));
             payrollData.Columns.Add("GrossPay", typeof(decimal));
+            payrollData.Columns.Add("LateDeduction", typeof(decimal));
             payrollData.Columns.Add("Deductions", typeof(decimal));
             payrollData.Columns.Add("NetPay", typeof(decimal));
             payrollData.Columns.Add("Status", typeof(string));
@@ -51,19 +52,27 @@ namespace PayrollSample
                 dataGridViewPayroll.Columns["TotalHours"].DefaultCellStyle.Format = "N2";
             }
 
+            // Use explicit Philippine peso formatting for all currency columns
+            var pesoFormat = "₱#,0.00";
+
             if (dataGridViewPayroll.Columns["GrossPay"] != null)
             {
-                dataGridViewPayroll.Columns["GrossPay"].DefaultCellStyle.Format = "C2";
+                dataGridViewPayroll.Columns["GrossPay"].DefaultCellStyle.Format = pesoFormat;
+            }
+
+            if (dataGridViewPayroll.Columns["LateDeduction"] != null)
+            {
+                dataGridViewPayroll.Columns["LateDeduction"].DefaultCellStyle.Format = pesoFormat;
             }
 
             if (dataGridViewPayroll.Columns["Deductions"] != null)
             {
-                dataGridViewPayroll.Columns["Deductions"].DefaultCellStyle.Format = "C2";
+                dataGridViewPayroll.Columns["Deductions"].DefaultCellStyle.Format = pesoFormat;
             }
 
             if (dataGridViewPayroll.Columns["NetPay"] != null)
             {
-                dataGridViewPayroll.Columns["NetPay"].DefaultCellStyle.Format = "C2";
+                dataGridViewPayroll.Columns["NetPay"].DefaultCellStyle.Format = pesoFormat;
             }
         }
 
@@ -208,10 +217,10 @@ namespace PayrollSample
                 {
                     conn.Open();
 
-                    // Get all employees
+                    // Get all employees (full-time and part-time)
                     var employeesQuery = @"SELECT UserID, FirstName, LastName, salary_rate, salary_type 
                                           FROM Users 
-                                          WHERE Role = 'Employee' AND Status = 'Active'";
+                                          WHERE Role IN ('Employee', 'Part-Time') AND Status = 'Active'";
 
                     using (var employeesCmd = new SqlCommand(employeesQuery, conn))
                     using (var employeesReader = employeesCmd.ExecuteReader())
@@ -242,14 +251,27 @@ namespace PayrollSample
 
                         // Calculate total deductions from Deductions table
                         // Deductions are calculated as percentage of gross pay and applied per cutoff period
-                        decimal deductions = CalculateTotalDeductions(conn, emp.UserID, grossPay);
-                        
-                        decimal netPay = grossPay - deductions;
+                        decimal baseDeductions = CalculateTotalDeductions(conn, emp.UserID, grossPay);
+
+                        // Calculate late deductions for the cutoff period
+                        decimal lateDeduction = CalculateLateDeduction(conn, emp.UserID, dtpFrom.Value, dtpTo.Value);
+
+                        decimal totalDeductions = baseDeductions + lateDeduction;
+                        decimal netPay = grossPay - totalDeductions;
 
                         // Check if payslip already exists for this period
                         string status = CheckPayslipStatus(conn, emp.UserID, dtpFrom.Value, dtpTo.Value) ? "Generated" : "Pending";
 
-                        payrollData.Rows.Add(emp.UserID, employeeName, totalHours, grossPay, deductions, netPay, status);
+                        var payrollRow = payrollData.NewRow();
+                        payrollRow["UserID"] = emp.UserID;
+                        payrollRow["EmployeeName"] = employeeName;
+                        payrollRow["TotalHours"] = totalHours;
+                        payrollRow["GrossPay"] = grossPay;
+                        payrollRow["LateDeduction"] = lateDeduction;
+                        payrollRow["Deductions"] = totalDeductions;
+                        payrollRow["NetPay"] = netPay;
+                        payrollRow["Status"] = status;
+                        payrollData.Rows.Add(payrollRow);
                     }
                 }
 
@@ -284,6 +306,34 @@ namespace PayrollSample
                 cmd.Parameters.AddWithValue("@UserID", userId);
                 cmd.Parameters.AddWithValue("@FromDate", fromDate.Date);
                 cmd.Parameters.AddWithValue("@ToDate", toDate.Date);
+
+                var result = cmd.ExecuteScalar();
+                if (result == null || result == DBNull.Value)
+                {
+                    return 0m;
+                }
+
+                return Convert.ToDecimal(result);
+            }
+        }
+
+        private decimal CalculateLateDeduction(SqlConnection conn, int userId, DateTime fromDate, DateTime toDate)
+        {
+            var query = @"SELECT ISNULL(SUM(CASE 
+                                             WHEN time_in IS NOT NULL AND CAST(time_in AS TIME) > @LateThreshold THEN 40 
+                                             ELSE 0 END), 0)
+                          FROM Attendance
+                          WHERE UserID = @UserID 
+                            AND [date] >= @FromDate
+                            AND [date] <= @ToDate";
+
+            using (var cmd = new SqlCommand(query, conn))
+            {
+                cmd.Parameters.AddWithValue("@UserID", userId);
+                cmd.Parameters.AddWithValue("@FromDate", fromDate.Date);
+                cmd.Parameters.AddWithValue("@ToDate", toDate.Date);
+                var thresholdParam = cmd.Parameters.Add("@LateThreshold", SqlDbType.Time);
+                thresholdParam.Value = new TimeSpan(8, 10, 0);
 
                 var result = cmd.ExecuteScalar();
                 if (result == null || result == DBNull.Value)
@@ -338,6 +388,20 @@ namespace PayrollSample
                     }
                 }
 
+                // Get the employee's role so we can apply role-specific deductions
+                string employeeRole = null;
+                using (var roleCmd = new SqlCommand("SELECT Role FROM Users WHERE UserID = @UserID", conn))
+                {
+                    roleCmd.Parameters.AddWithValue("@UserID", userId);
+                    var roleResult = roleCmd.ExecuteScalar();
+                    if (roleResult != null && roleResult != DBNull.Value)
+                    {
+                        employeeRole = roleResult.ToString();
+                    }
+                }
+                bool isPartTime = !string.IsNullOrEmpty(employeeRole) &&
+                                  employeeRole.Equals("Part-Time", StringComparison.OrdinalIgnoreCase);
+
                 // Get column names from Deductions table
                 var columnQuery = @"SELECT COLUMN_NAME 
                                   FROM INFORMATION_SCHEMA.COLUMNS 
@@ -364,13 +428,28 @@ namespace PayrollSample
                 {
                     // This is a master deductions table with percentage-based deductions
                     // Apply all mandatory deductions (or all if no mandatory flag exists)
+                    // For part-time employees, only apply SSS and Withholding Tax
                     string whereClause = "";
+
+                    var filters = new System.Collections.Generic.List<string>();
+
                     if (mandatoryCol != null)
                     {
                         // Only apply mandatory deductions
-                        whereClause = $"WHERE [{mandatoryCol}] = 1 OR [{mandatoryCol}] = 'true' OR [{mandatoryCol}] = 'True'";
+                        filters.Add($"([{mandatoryCol}] = 1 OR [{mandatoryCol}] = 'true' OR [{mandatoryCol}] = 'True')");
                     }
-                    // If no mandatory column, apply all deductions
+
+                    if (isPartTime && nameCol != null)
+                    {
+                        // For part-time employees, restrict to SSS and Withholding Tax
+                        filters.Add($"[{nameCol}] IN ('SSS', 'Withholding Tax')");
+                    }
+
+                    if (filters.Count > 0)
+                    {
+                        whereClause = "WHERE " + string.Join(" AND ", filters);
+                    }
+                    // If no filters, apply all deductions
 
                     var query = $@"SELECT [{percentageCol}] AS Percentage
                                  FROM Deductions
@@ -619,23 +698,79 @@ namespace PayrollSample
                         decimal totalHours = Convert.ToDecimal(row["TotalHours"]);
                         decimal grossPay = Convert.ToDecimal(row["GrossPay"]);
                         decimal deductions = Convert.ToDecimal(row["Deductions"]);
+                        decimal lateDeduction = payrollData.Columns.Contains("LateDeduction") 
+                            ? Convert.ToDecimal(row["LateDeduction"]) 
+                            : 0m;
                         decimal netPay = Convert.ToDecimal(row["NetPay"]);
                         string currentStatus = row["Status"].ToString();
 
-                        // Skip if already generated
-                        if (currentStatus == "Generated")
+                        // Check if payslip already exists
+                        bool payslipExists = CheckPayslipStatus(conn, userId, dtpFrom.Value, dtpTo.Value);
+                        
+                        if (payslipExists)
                         {
-                            skipCount++;
-                            continue;
-                        }
+                            // Check if existing record needs to be regenerated (zeros OR outdated late deduction)
+                            var checkQuery = @"SELECT 
+                                                   ISNULL(TotalHours, 0)      AS TotalHours, 
+                                                   ISNULL(GrossPay, 0)       AS GrossPay,
+                                                   ISNULL(LateDeduction, 0)  AS LateDeduction
+                                               FROM Payslips
+                                               WHERE UserID = @UserID 
+                                                 AND PeriodFrom = @PeriodFrom 
+                                                 AND PeriodTo = @PeriodTo";
+                            using (var checkCmd = new SqlCommand(checkQuery, conn))
+                            {
+                                checkCmd.Parameters.AddWithValue("@UserID", userId);
+                                checkCmd.Parameters.AddWithValue("@PeriodFrom", dtpFrom.Value.Date);
+                                checkCmd.Parameters.AddWithValue("@PeriodTo", dtpTo.Value.Date);
+                                using (var reader = checkCmd.ExecuteReader())
+                                {
+                                    if (reader.Read())
+                                    {
+                                        decimal existingHours = Convert.ToDecimal(reader["TotalHours"]);
+                                        decimal existingGrossPay = Convert.ToDecimal(reader["GrossPay"]);
+                                        decimal existingLateDeduction = Convert.ToDecimal(reader["LateDeduction"]);
 
-                        // Check again to prevent duplicates
-                        if (CheckPayslipStatus(conn, userId, dtpFrom.Value, dtpTo.Value))
-                        {
-                            row["Status"] = "Generated";
-                            skipCount++;
-                            continue;
+                                        bool hasZeroCoreValues = (existingHours == 0 || existingGrossPay == 0) && (totalHours > 0 || grossPay > 0);
+                                        bool lateDeductionChanged = existingLateDeduction != lateDeduction;
+
+                                        if (hasZeroCoreValues || lateDeductionChanged)
+                                        {
+                                            reader.Close();
+                                            // Delete the existing record so we can insert the correct one
+                                            var deleteQuery = @"DELETE FROM Payslips 
+                                                               WHERE UserID = @UserID 
+                                                                 AND PeriodFrom = @PeriodFrom 
+                                                                 AND PeriodTo = @PeriodTo";
+                                            using (var deleteCmd = new SqlCommand(deleteQuery, conn))
+                                            {
+                                                deleteCmd.Parameters.AddWithValue("@UserID", userId);
+                                                deleteCmd.Parameters.AddWithValue("@PeriodFrom", dtpFrom.Value.Date);
+                                                deleteCmd.Parameters.AddWithValue("@PeriodTo", dtpTo.Value.Date);
+                                                deleteCmd.ExecuteNonQuery();
+                                                System.Diagnostics.Debug.WriteLine($"Deleted existing payslip for UserID {userId}. Will insert new record with updated values.");
+                                            }
+                                            // Continue to insert the new record below
+                                        }
+                                        else
+                                        {
+                                            // Record exists and matches current values we care about; skip it
+                                            row["Status"] = "Generated";
+                                            skipCount++;
+                                            continue;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        reader.Close();
+                                        // Record doesn't exist, continue to insert
+                                    }
+                                }
+                            }
                         }
+                        
+                        // If we get here, either the record doesn't exist or we deleted a zero-value record
+                        // Proceed to insert/update
 
                         // Build INSERT query using actual column names (exclude identity columns)
                         string insertQuery = BuildInsertQuery(columnNames);
@@ -647,10 +782,28 @@ namespace PayrollSample
 
                         using (var cmd = new SqlCommand(insertQuery, conn))
                         {
+                            // Debug: Log values before inserting
+                            System.Diagnostics.Debug.WriteLine($"Inserting payslip for UserID {userId}:");
+                            System.Diagnostics.Debug.WriteLine($"  Period: {dtpFrom.Value.Date:yyyy-MM-dd} to {dtpTo.Value.Date:yyyy-MM-dd}");
+                            System.Diagnostics.Debug.WriteLine($"  TotalHours: {totalHours}");
+                            System.Diagnostics.Debug.WriteLine($"  GrossPay: {grossPay}");
+                            System.Diagnostics.Debug.WriteLine($"  Late Deduction: {lateDeduction}");
+                            System.Diagnostics.Debug.WriteLine($"  Deductions: {deductions}");
+                            System.Diagnostics.Debug.WriteLine($"  NetPay: {netPay}");
+                            System.Diagnostics.Debug.WriteLine($"  Insert Query: {insertQuery}");
+                            
                             AddInsertParameters(cmd, columnNames, userId, dtpFrom.Value.Date, dtpTo.Value.Date, 
-                                totalHours, grossPay, deductions, netPay);
+                                totalHours, grossPay, deductions, netPay, lateDeduction);
+
+                            // Debug: Log parameter values
+                            foreach (System.Data.SqlClient.SqlParameter param in cmd.Parameters)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"  Parameter {param.ParameterName}: {param.Value} (Type: {param.SqlDbType})");
+                            }
 
                             cmd.ExecuteNonQuery();
+                            
+                            System.Diagnostics.Debug.WriteLine($"  Insert completed successfully");
                         }
 
                         row["Status"] = "Generated";
@@ -681,6 +834,7 @@ namespace PayrollSample
             string totalHoursCol = FindColumnName(columnNames, new[] { "TotalHours", "total_hours", "Hours", "hours" });
             string grossPayCol = FindColumnName(columnNames, new[] { "GrossPay", "gross_pay", "Gross", "gross" });
             string deductionsCol = FindColumnName(columnNames, new[] { "Deductions", "deductions", "Deduction", "deduction" });
+            string lateDeductionCol = FindColumnName(columnNames, new[] { "LateDeduction", "late_deduction", "LatePenalty", "late_penalty" });
             string netPayCol = FindColumnName(columnNames, new[] { "NetPay", "net_pay", "Net", "net" });
             string statusCol = FindColumnName(columnNames, new[] { "Status", "status" });
             string generatedDateCol = FindColumnName(columnNames, new[] { "GeneratedDate", "generated_date", "CreatedDate", "created_date", "DateGenerated", "date_generated" });
@@ -714,6 +868,11 @@ namespace PayrollSample
             { 
                 columns.Add($"[{grossPayCol}]"); 
                 values.Add("@GrossPay"); 
+            }
+            if (lateDeductionCol != null && !IsIdentityColumn(columnNames, lateDeductionCol) && !IsIdColumn(lateDeductionCol))
+            {
+                columns.Add($"[{lateDeductionCol}]");
+                values.Add("@LateDeduction");
             }
             if (deductionsCol != null && !IsIdentityColumn(columnNames, deductionsCol) && !IsIdColumn(deductionsCol)) 
             { 
@@ -782,7 +941,7 @@ namespace PayrollSample
         }
 
         private void AddInsertParameters(SqlCommand cmd, System.Collections.Generic.Dictionary<string, string> columnNames, 
-            int userId, DateTime periodFrom, DateTime periodTo, decimal totalHours, decimal grossPay, decimal deductions, decimal netPay)
+            int userId, DateTime periodFrom, DateTime periodTo, decimal totalHours, decimal grossPay, decimal deductions, decimal netPay, decimal lateDeduction)
         {
             // Find column names (case-insensitive)
             string userIdCol = FindColumnName(columnNames, new[] { "UserID", "user_id", "EmployeeID", "employee_id" });
@@ -790,6 +949,7 @@ namespace PayrollSample
             string periodToCol = FindColumnName(columnNames, new[] { "PeriodTo", "period_to", "ToDate", "to_date", "EndDate", "end_date" });
             string totalHoursCol = FindColumnName(columnNames, new[] { "TotalHours", "total_hours", "Hours", "hours" });
             string grossPayCol = FindColumnName(columnNames, new[] { "GrossPay", "gross_pay", "Gross", "gross" });
+            string lateDeductionCol = FindColumnName(columnNames, new[] { "LateDeduction", "late_deduction", "LatePenalty", "late_penalty" });
             string deductionsCol = FindColumnName(columnNames, new[] { "Deductions", "deductions", "Deduction", "deduction" });
             string netPayCol = FindColumnName(columnNames, new[] { "NetPay", "net_pay", "Net", "net" });
             string statusCol = FindColumnName(columnNames, new[] { "Status", "status" });
@@ -800,6 +960,7 @@ namespace PayrollSample
             if (periodToCol != null) cmd.Parameters.AddWithValue("@PeriodTo", periodTo);
             if (totalHoursCol != null) cmd.Parameters.AddWithValue("@TotalHours", totalHours);
             if (grossPayCol != null) cmd.Parameters.AddWithValue("@GrossPay", grossPay);
+            if (lateDeductionCol != null) cmd.Parameters.AddWithValue("@LateDeduction", lateDeduction);
             if (deductionsCol != null) cmd.Parameters.AddWithValue("@Deductions", deductions);
             if (netPayCol != null) cmd.Parameters.AddWithValue("@NetPay", netPay);
             if (statusCol != null) cmd.Parameters.AddWithValue("@Status", "Generated");
@@ -827,6 +988,7 @@ namespace PayrollSample
                 { "PeriodTo", "DATE NULL" },
                 { "TotalHours", "DECIMAL(18,2) NULL" },
                 { "GrossPay", "DECIMAL(18,2) NULL" },
+                { "LateDeduction", "DECIMAL(18,2) NULL" },
                 { "Deductions", "DECIMAL(18,2) NULL" },
                 { "NetPay", "DECIMAL(18,2) NULL" },
                 { "Status", "NVARCHAR(50) NULL" },
@@ -844,6 +1006,8 @@ namespace PayrollSample
                     }
                 }
             }
+
+            EnsureLateDeductionColumnOnPayroll(conn);
         }
 
         private bool ColumnExists(SqlConnection conn, string tableName, string columnName)
@@ -857,6 +1021,36 @@ namespace PayrollSample
                 cmd.Parameters.AddWithValue("@TableName", tableName);
                 cmd.Parameters.AddWithValue("@ColumnName", columnName);
 
+                int count = Convert.ToInt32(cmd.ExecuteScalar());
+                return count > 0;
+            }
+        }
+
+        private void EnsureLateDeductionColumnOnPayroll(SqlConnection conn)
+        {
+            if (!TableExists(conn, "Payroll"))
+            {
+                return;
+            }
+
+            if (!ColumnExists(conn, "Payroll", "late_deduction"))
+            {
+                using (var cmd = new SqlCommand("ALTER TABLE Payroll ADD late_deduction DECIMAL(18,2) DEFAULT 0", conn))
+                {
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        private bool TableExists(SqlConnection conn, string tableName)
+        {
+            var query = @"SELECT COUNT(*) 
+                          FROM INFORMATION_SCHEMA.TABLES 
+                          WHERE TABLE_NAME = @TableName";
+
+            using (var cmd = new SqlCommand(query, conn))
+            {
+                cmd.Parameters.AddWithValue("@TableName", tableName);
                 int count = Convert.ToInt32(cmd.ExecuteScalar());
                 return count > 0;
             }

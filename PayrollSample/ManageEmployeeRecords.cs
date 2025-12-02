@@ -36,27 +36,44 @@ namespace PayrollSample
             LoadEmployees();
         }
 
-        private void LoadEmployees()
+        private void LoadEmployees(string searchTerm = "")
         {
             try
             {
                 using (var conn = new SqlConnection(connectionString))
-                using (var adapter = new SqlDataAdapter(
-                    @"SELECT UserID,
-                             FirstName,
-                             LastName,
-                             Username,
-                             salary_rate AS SalaryRate,
-                             salary_type AS SalaryType,
-                             Status
-                      FROM Users
-                      WHERE Role = 'Employee'
-                      ORDER BY LastName, FirstName", conn))
                 {
-                    var table = new DataTable();
-                    adapter.Fill(table);
-                    dgvEmployees.DataSource = table;
-                    dgvEmployees.ClearSelection();
+                    string query = @"SELECT UserID,
+                                            FirstName,
+                                            LastName,
+                                            Username,
+                                            Role,
+                                            salary_rate AS SalaryRate,
+                                            salary_type AS SalaryType,
+                                            Status
+                                     FROM Users
+                                     WHERE Role IN ('Employee', 'Part-Time')";
+                    
+                    if (!string.IsNullOrWhiteSpace(searchTerm))
+                    {
+                        query += @" AND (FirstName LIKE @SearchTerm 
+                                         OR LastName LIKE @SearchTerm 
+                                         OR Username LIKE @SearchTerm)";
+                    }
+                    
+                    query += " ORDER BY LastName, FirstName";
+                    
+                    using (var adapter = new SqlDataAdapter(query, conn))
+                    {
+                        if (!string.IsNullOrWhiteSpace(searchTerm))
+                        {
+                            adapter.SelectCommand.Parameters.AddWithValue("@SearchTerm", $"%{searchTerm.Trim()}%");
+                        }
+                        
+                        var table = new DataTable();
+                        adapter.Fill(table);
+                        dgvEmployees.DataSource = table;
+                        dgvEmployees.ClearSelection();
+                    }
                 }
             }
             catch (Exception ex)
@@ -199,50 +216,50 @@ namespace PayrollSample
                 return;
             }
 
-            var choice = MessageBox.Show(
-                "Yes = disable employee (status set to Inactive).\nNo = permanently delete employee.\nCancel = abort.",
-                "Delete / Disable Employee",
-                MessageBoxButtons.YesNoCancel,
-                MessageBoxIcon.Question,
-                MessageBoxDefaultButton.Button3);
-
-            if (choice == DialogResult.Cancel)
+            using (var dialog = new DeleteDisableDialog())
             {
-                return;
-            }
-
-            try
-            {
-                using (var conn = new SqlConnection(connectionString))
-                using (var cmd = new SqlCommand())
+                if (dialog.ShowDialog(this) == DialogResult.Cancel)
                 {
-                    cmd.Connection = conn;
-
-                    if (choice == DialogResult.Yes)
-                    {
-                        cmd.CommandText = "UPDATE Users SET Status = 'Inactive' WHERE UserID = @UserID";
-                    }
-                    else // DialogResult.No
-                    {
-                        cmd.CommandText = "DELETE FROM Users WHERE UserID = @UserID";
-                    }
-
-                    cmd.Parameters.AddWithValue("@UserID", selectedUserId.Value);
-
-                    conn.Open();
-                    cmd.ExecuteNonQuery();
+                    return;
                 }
 
-                MessageBox.Show(choice == DialogResult.Yes
-                    ? "Employee disabled successfully."
-                    : "Employee removed successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                try
+                {
+                    using (var conn = new SqlConnection(connectionString))
+                    using (var cmd = new SqlCommand())
+                    {
+                        cmd.Connection = conn;
 
-                ClearForm();
-                LoadEmployees();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Failed to modify employee: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        if (dialog.UserChoice == DialogResult.Yes) // Delete
+                        {
+                            cmd.CommandText = "DELETE FROM Users WHERE UserID = @UserID";
+                        }
+                        else if (dialog.UserChoice == DialogResult.No) // Disable
+                        {
+                            cmd.CommandText = "UPDATE Users SET Status = 'Inactive' WHERE UserID = @UserID";
+                        }
+                        else
+                        {
+                            return; // Cancel
+                        }
+
+                        cmd.Parameters.AddWithValue("@UserID", selectedUserId.Value);
+
+                        conn.Open();
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    MessageBox.Show(dialog.UserChoice == DialogResult.Yes
+                        ? "Employee removed successfully."
+                        : "Employee disabled successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    ClearForm();
+                    LoadEmployees();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Failed to modify employee: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
 
@@ -283,7 +300,23 @@ namespace PayrollSample
 
         private void btnRefresh_Click(object sender, EventArgs e)
         {
+            txtSearch.Clear();
             LoadEmployees();
+        }
+
+        private void btnSearch_Click(object sender, EventArgs e)
+        {
+            LoadEmployees(txtSearch.Text);
+        }
+
+        private void txtSearch_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                btnSearch_Click(sender, e);
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+            }
         }
 
         private void btnClear_Click(object sender, EventArgs e)

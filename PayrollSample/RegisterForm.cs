@@ -19,12 +19,31 @@ namespace PayrollSample
 			string lastName = tbLastName.Text.Trim();
 			string username = tbUsername.Text.Trim();
 			string password = tbPassword.Text.Trim();
+			string selectedRoleDisplay = cmbRole.SelectedItem as string;
 
 			if (string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName) || 
 			    string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
 			{
 				MessageBox.Show("Please fill in all fields.");
 				return;
+			}
+
+			if (string.IsNullOrWhiteSpace(selectedRoleDisplay))
+			{
+				MessageBox.Show("Please select a role (Full-Time or Part-Time).");
+				return;
+			}
+
+			// Map display text to actual Role value stored in the database
+			string roleValue = "Employee"; // default
+			if (selectedRoleDisplay.StartsWith("Part-Time", StringComparison.OrdinalIgnoreCase))
+			{
+				roleValue = "Part-Time";
+			}
+			else
+			{
+				// "Employee (Full-Time)" or anything else -> treat as full-time employee
+				roleValue = "Employee";
 			}
 
 			try
@@ -36,7 +55,7 @@ namespace PayrollSample
 					cmd.Parameters.AddWithValue("@ln", lastName);
 					cmd.Parameters.AddWithValue("@u", username);
 					cmd.Parameters.AddWithValue("@p", password);
-					cmd.Parameters.AddWithValue("@r", "Employee");
+					cmd.Parameters.AddWithValue("@r", roleValue);
 
 					conn.Open();
 					int rows = cmd.ExecuteNonQuery();

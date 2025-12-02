@@ -92,7 +92,8 @@ namespace PayrollSample
                 loginForm = new Form1();
             }
             
-            // Show the login form and bring it to front
+            // Clear credentials and show the login form
+            loginForm.ClearCredentials();
             loginForm.Show();
             loginForm.BringToFront();
             

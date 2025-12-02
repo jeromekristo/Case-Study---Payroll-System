@@ -95,7 +95,8 @@ namespace PayrollSample
                 loginForm = new Form1();
             }
             
-            // Show the login form and clear the password field
+            // Clear credentials and show the login form
+            loginForm.ClearCredentials();
             loginForm.Show();
             loginForm.BringToFront();
             
@@ -354,6 +355,21 @@ namespace PayrollSample
                         var openSinceText = openTimeIn.HasValue ? openTimeIn.Value.ToString("hh:mm tt") : "earlier";
                         MessageBox.Show("You already have an active attendance entry since " + openSinceText + ". Please time out first.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         return;
+                    }
+
+                    using (var checkPerDayCmd = new SqlCommand(@"SELECT COUNT(*) 
+                                                                  FROM Attendance 
+                                                                  WHERE UserID = @UserID AND [date] = @Date", conn))
+                    {
+                        checkPerDayCmd.Parameters.AddWithValue("@UserID", userId);
+                        checkPerDayCmd.Parameters.AddWithValue("@Date", DateTime.Today);
+
+                        var entriesToday = Convert.ToInt32(checkPerDayCmd.ExecuteScalar());
+                        if (entriesToday > 0)
+                        {
+                            MessageBox.Show("You have already timed in for today. Please return tomorrow.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            return;
+                        }
                     }
 
                     DateTime now = DateTime.Now;
