@@ -200,15 +200,40 @@ namespace PayrollSample
                     break;
 
                 case "Deduction Report":
-                    // Updated to work with the actual Deductions table structure (deduction_id, name, percentage, is_mandatory)
+                    // Calculate deduction report per deduction type, filtered by employee and date range
+                    // Each deduction is applied per payslip (cutoff period)
+                    // times_applied = number of payslips where this deduction was applied
+                    // total_deducted = sum of (GrossPay * percentage) for those payslips
+                    // Note: Full-time employees get all mandatory deductions; Part-time only get SSS and Withholding Tax
                     cmd.CommandText =
-                        @"SELECT 
+                        @"WITH FilteredPayslips AS (
+                            SELECT ps.UserID, ps.GrossPay, u.Role
+                            FROM Payslips ps
+                            INNER JOIN Users u ON ps.UserID = u.UserID
+                            WHERE ps.PeriodFrom >= @startDate 
+                              AND ps.PeriodTo <= @endDate
+                              AND ps.Deductions > 0
+                              AND (u.UserID = @userId OR @userId = 0)
+                          )
+                          SELECT 
                             d.name AS deduction_name,
                             d.percentage AS amount,
-                            CASE WHEN d.is_mandatory = 1 THEN 'Yes' ELSE 'No' END AS is_percentage,
-                            (SELECT COUNT(*) FROM Payslips WHERE Deductions > 0) AS times_applied,
-                            (SELECT SUM(Deductions) FROM Payslips) AS total_deducted
-                          FROM Deductions d;";
+                            'Yes' AS is_percentage,
+                            COUNT(ps.UserID) AS times_applied,
+                            ISNULL(SUM(ps.GrossPay * d.percentage / 100.0), 0) AS total_deducted
+                          FROM Deductions d
+                          LEFT JOIN FilteredPayslips ps ON (
+                              -- Full-time employees: all mandatory deductions
+                              (d.is_mandatory = 1 AND ps.Role = 'Employee')
+                              OR
+                              -- Part-time employees: only SSS and Withholding Tax
+                              (d.name IN ('SSS', 'Withholding Tax') AND ps.Role = 'Part-Time')
+                          )
+                          GROUP BY d.name, d.percentage, d.is_mandatory
+                          ORDER BY d.name;";
+                    cmd.Parameters.Add("@startDate", SqlDbType.Date).Value = dtFrom.Value.Date;
+                    cmd.Parameters.Add("@endDate", SqlDbType.Date).Value = dtTo.Value.Date;
+                    cmd.Parameters.Add("@userId", SqlDbType.Int).Value = userId;
                     break;
 
                 default:
@@ -218,7 +243,7 @@ namespace PayrollSample
 
         private bool RequiresDateRange(string reportType)
         {
-            return reportType == "Attendance Report" || reportType == "Payroll Summary Report";
+            return reportType == "Attendance Report" || reportType == "Payroll Summary Report" || reportType == "Deduction Report";
         }
 
         private int GetSelectedUserId()

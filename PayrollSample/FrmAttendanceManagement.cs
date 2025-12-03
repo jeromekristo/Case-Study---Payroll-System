@@ -39,7 +39,7 @@ namespace PayrollSample
                 using (var cmd = new SqlCommand(
                     @"SELECT UserID, FirstName, LastName
                       FROM Users
-                      WHERE Role = 'Employee'
+                      WHERE Role IN ('Employee', 'Part-Time')
                       ORDER BY LastName, FirstName", conn))
                 {
                     conn.Open();

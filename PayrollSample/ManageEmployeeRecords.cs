@@ -226,35 +226,121 @@ namespace PayrollSample
                 try
                 {
                     using (var conn = new SqlConnection(connectionString))
-                    using (var cmd = new SqlCommand())
                     {
-                        cmd.Connection = conn;
-
-                        if (dialog.UserChoice == DialogResult.Yes) // Delete
-                        {
-                            cmd.CommandText = "DELETE FROM Users WHERE UserID = @UserID";
-                        }
-                        else if (dialog.UserChoice == DialogResult.No) // Disable
-                        {
-                            cmd.CommandText = "UPDATE Users SET Status = 'Inactive' WHERE UserID = @UserID";
-                        }
-                        else
-                        {
-                            return; // Cancel
-                        }
-
-                        cmd.Parameters.AddWithValue("@UserID", selectedUserId.Value);
-
                         conn.Open();
-                        cmd.ExecuteNonQuery();
+                        
+                        using (var transaction = conn.BeginTransaction())
+                        {
+                            try
+                            {
+                                if (dialog.UserChoice == DialogResult.Yes) // Delete
+                                {
+                                    // Delete related records first to avoid foreign key constraint violations
+                                    // Delete from Attendance table
+                                    using (var deleteAttendanceCmd = new SqlCommand("DELETE FROM Attendance WHERE UserID = @UserID", conn, transaction))
+                                    {
+                                        deleteAttendanceCmd.Parameters.AddWithValue("@UserID", selectedUserId.Value);
+                                        deleteAttendanceCmd.ExecuteNonQuery();
+                                    }
+
+                                    // Delete from Payslips table (if it exists)
+                                    try
+                                    {
+                                        using (var deletePayslipsCmd = new SqlCommand("DELETE FROM Payslips WHERE UserID = @UserID", conn, transaction))
+                                        {
+                                            deletePayslipsCmd.Parameters.AddWithValue("@UserID", selectedUserId.Value);
+                                            deletePayslipsCmd.ExecuteNonQuery();
+                                        }
+                                    }
+                                    catch (SqlException)
+                                    {
+                                        // Payslips table might not exist or use different column name, try alternative
+                                        try
+                                        {
+                                            using (var deletePayslipsCmd = new SqlCommand("DELETE FROM Payslips WHERE user_id = @UserID", conn, transaction))
+                                            {
+                                                deletePayslipsCmd.Parameters.AddWithValue("@UserID", selectedUserId.Value);
+                                                deletePayslipsCmd.ExecuteNonQuery();
+                                            }
+                                        }
+                                        catch (SqlException)
+                                        {
+                                            // Table might not exist, continue
+                                        }
+                                    }
+
+                                    // Delete from Payroll table (if it exists)
+                                    try
+                                    {
+                                        using (var deletePayrollCmd = new SqlCommand("DELETE FROM Payroll WHERE UserID = @UserID", conn, transaction))
+                                        {
+                                            deletePayrollCmd.Parameters.AddWithValue("@UserID", selectedUserId.Value);
+                                            deletePayrollCmd.ExecuteNonQuery();
+                                        }
+                                    }
+                                    catch (SqlException)
+                                    {
+                                        // Payroll table might not exist or use different column name, try alternative
+                                        try
+                                        {
+                                            using (var deletePayrollCmd = new SqlCommand("DELETE FROM Payroll WHERE user_id = @UserID", conn, transaction))
+                                            {
+                                                deletePayrollCmd.Parameters.AddWithValue("@UserID", selectedUserId.Value);
+                                                deletePayrollCmd.ExecuteNonQuery();
+                                            }
+                                        }
+                                        catch (SqlException)
+                                        {
+                                            // Table might not exist, continue
+                                        }
+                                    }
+
+                                    // Finally, delete the employee from Users table
+                                    using (var deleteUserCmd = new SqlCommand("DELETE FROM Users WHERE UserID = @UserID", conn, transaction))
+                                    {
+                                        deleteUserCmd.Parameters.AddWithValue("@UserID", selectedUserId.Value);
+                                        deleteUserCmd.ExecuteNonQuery();
+                                    }
+
+                                    transaction.Commit();
+                                    MessageBox.Show("Employee removed successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                }
+                                else if (dialog.UserChoice == DialogResult.No) // Disable
+                                {
+                                    using (var disableCmd = new SqlCommand("UPDATE Users SET Status = 'Inactive' WHERE UserID = @UserID", conn, transaction))
+                                    {
+                                        disableCmd.Parameters.AddWithValue("@UserID", selectedUserId.Value);
+                                        disableCmd.ExecuteNonQuery();
+                                    }
+
+                                    transaction.Commit();
+                                    MessageBox.Show("Employee disabled successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                }
+                                else
+                                {
+                                    transaction.Rollback();
+                                    return; // Cancel
+                                }
+
+                                ClearForm();
+                                LoadEmployees();
+                            }
+                            catch (Exception ex)
+                            {
+                                transaction.Rollback();
+                                throw; // Re-throw to be caught by outer catch block
+                            }
+                        }
                     }
-
-                    MessageBox.Show(dialog.UserChoice == DialogResult.Yes
-                        ? "Employee removed successfully."
-                        : "Employee disabled successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                    ClearForm();
-                    LoadEmployees();
+                }
+                catch (SqlException sqlEx)
+                {
+                    string errorMessage = "Failed to modify employee: " + sqlEx.Message;
+                    if (sqlEx.Number == 547) // Foreign key constraint violation
+                    {
+                        errorMessage = "Cannot delete employee. There are still related records in the database. Please contact the administrator.";
+                    }
+                    MessageBox.Show(errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
                 catch (Exception ex)
                 {

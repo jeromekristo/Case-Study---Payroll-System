@@ -78,7 +78,7 @@ namespace PayrollSample
             this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label2.Location = new System.Drawing.Point(270, 18);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(33, 20);
+            this.label2.Size = new System.Drawing.Size(31, 20);
             this.label2.TabIndex = 3;
             this.label2.Text = "To:";
             // 
@@ -89,7 +89,7 @@ namespace PayrollSample
             this.lblCutoffInfo.ForeColor = System.Drawing.Color.DarkBlue;
             this.lblCutoffInfo.Location = new System.Drawing.Point(510, 18);
             this.lblCutoffInfo.Name = "lblCutoffInfo";
-            this.lblCutoffInfo.Size = new System.Drawing.Size(250, 18);
+            this.lblCutoffInfo.Size = new System.Drawing.Size(264, 18);
             this.lblCutoffInfo.TabIndex = 4;
             this.lblCutoffInfo.Text = "Cutoff Period: 1-15 or 16-End of Month";
             // 
@@ -119,7 +119,7 @@ namespace PayrollSample
             // 
             this.btnClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnClose.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnClose.Location = new System.Drawing.Point(850, 10);
+            this.btnClose.Location = new System.Drawing.Point(827, 6);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(120, 40);
             this.btnClose.TabIndex = 6;
@@ -156,7 +156,7 @@ namespace PayrollSample
             this.panelDateRange.Controls.Add(this.lblCutoffInfo);
             this.panelDateRange.Location = new System.Drawing.Point(12, 12);
             this.panelDateRange.Name = "panelDateRange";
-            this.panelDateRange.Size = new System.Drawing.Size(700, 50);
+            this.panelDateRange.Size = new System.Drawing.Size(809, 50);
             this.panelDateRange.TabIndex = 7;
             // 
             // panelButtons
@@ -177,13 +177,14 @@ namespace PayrollSample
             this.Controls.Add(this.panelButtons);
             this.Controls.Add(this.panelDateRange);
             this.Controls.Add(this.dataGridViewPayroll);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
-            this.MaximizeBox = true;
-            this.MinimizeBox = true;
             this.Name = "FrmPayrollProcessing";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Payroll Processing";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewPayroll)).EndInit();
+            this.panelDateRange.ResumeLayout(false);
+            this.panelDateRange.PerformLayout();
+            this.panelButtons.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
